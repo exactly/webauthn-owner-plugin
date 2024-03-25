@@ -1,0 +1,12 @@
+[profile.default]
+solc_version = "0.8.25"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+verbosity = 3
+isolate = true
+
+[fmt]
+tab_width = 2
+bracket_spacing = true
+number_underscore = "thousands"
