@@ -1,2 +1,5 @@
 @openzeppelin/contracts/=lib/modular-account/lib/openzeppelin-contracts/contracts/
 openzeppelin-contracts/=lib/webauthn-sol/lib/openzeppelin-contracts/
+
+ds-test/=lib/forge-std/lib/ds-test/src/
+erc4626-tests/=lib/webauthn-sol/lib/openzeppelin-contracts/lib/erc4626-tests/
