@@ -16,6 +16,7 @@ import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
 
 import { WebauthnOwnerPlugin, SignatureWrapper, OwnersLib } from "../src/WebauthnOwnerPlugin.sol";
 
+// solhint-disable func-name-mixedcase
 contract MultiOwnerPluginTest is Test {
   using OwnersLib for address;
   using ECDSA for bytes32;
