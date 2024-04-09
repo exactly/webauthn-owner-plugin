@@ -4,7 +4,7 @@
     "test": "concurrently 'npm:test:*' --group -c auto",
     "test:fmt": "forge fmt --check",
     "test:forge": "forge snapshot --check",
-    "test:solhint": "solhint '{src,script,test}/**/*.sol'",
+    "test:solhint": "solhint '{src,script,test}/**/*.sol' --max-warnings=0",
     "test:slither": "slither .",
     "prepare": "if git status &>/dev/null; then git submodule update --init --recursive; fi"
   },
