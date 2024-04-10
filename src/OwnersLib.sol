@@ -7,7 +7,7 @@ library OwnersLib {
   function push(Owners storage owners, PublicKey[] memory values) internal {
     uint256 length = owners.length;
     for (uint256 i = 0; i < values.length; ++i) {
-      owners.data[length + i] = values[i];
+      owners.publicKeys[length + i] = values[i];
     }
     owners.length = length + values.length;
   }
@@ -18,29 +18,29 @@ library OwnersLib {
 
   function get(Owners storage owners, uint256 index) internal view returns (PublicKey memory) {
     if (index >= owners.length) revert IndexOutOfBounds();
-    return owners.data[index];
+    return owners.publicKeys[index];
   }
 
-  function all(Owners storage owners) internal view returns (PublicKey[] memory array) {
-    array = new PublicKey[](owners.length);
-    for (uint256 i = 0; i < array.length; ++i) {
-      array[i] = owners.data[i];
+  function all(Owners storage owners) internal view returns (PublicKey[] memory publicKeys) {
+    publicKeys = new PublicKey[](owners.length);
+    for (uint256 i = 0; i < publicKeys.length; ++i) {
+      publicKeys[i] = owners.publicKeys[i];
     }
   }
 
   function allAddresses(Owners storage owners) internal view returns (address[] memory addresses) {
     addresses = new address[](owners.length);
     for (uint256 i = 0; i < addresses.length; ++i) {
-      addresses[i] = owners.data[i].y == 0
-        ? address(uint160(uint256(owners.data[i].x)))
-        : address(bytes20(keccak256(abi.encode(owners.data[i]))));
+      addresses[i] = owners.publicKeys[i].y == 0
+        ? address(uint160(uint256(owners.publicKeys[i].x)))
+        : address(bytes20(keccak256(abi.encode(owners.publicKeys[i]))));
     }
   }
 
-  function allFixed(Owners storage owners) internal view returns (PublicKey[64] memory array) {
+  function allFixed(Owners storage owners) internal view returns (PublicKey[64] memory publicKeys) {
     uint256 length = owners.length;
     for (uint256 i = 0; i < length; ++i) {
-      array[i] = owners.data[i];
+      publicKeys[i] = owners.publicKeys[i];
     }
   }
 
@@ -48,21 +48,21 @@ library OwnersLib {
     PublicKey memory owner = PublicKey(uint256(uint160(ownerAddress)), 0);
     uint256 length = owners.length;
     for (uint256 i = 0; i < length; ++i) {
-      if (owners.data[i].x == owner.x && owners.data[i].y == owner.y) return true;
+      if (owners.publicKeys[i].x == owner.x && owners.publicKeys[i].y == owner.y) return true;
     }
     return false;
   }
 
-  function contains(PublicKey[64] memory array, PublicKey memory owner, uint256 length) internal pure returns (bool) {
+  function contains(PublicKey[64] memory keys, PublicKey memory owner, uint256 length) internal pure returns (bool) {
     for (uint256 i = 0; i < length; ++i) {
-      if (array[i].x == owner.x && array[i].y == owner.y) return true;
+      if (keys[i].x == owner.x && keys[i].y == owner.y) return true;
     }
     return false;
   }
 
-  function find(PublicKey[64] memory array, PublicKey memory owner, uint256 length) internal pure returns (uint256) {
+  function find(PublicKey[64] memory keys, PublicKey memory owner, uint256 length) internal pure returns (uint256) {
     for (uint256 i = 0; i < length; ++i) {
-      if (array[i].x == owner.x && array[i].y == owner.y) return i;
+      if (keys[i].x == owner.x && keys[i].y == owner.y) return i;
     }
     return type(uint256).max;
   }
@@ -85,7 +85,7 @@ library OwnersLib {
 
 struct Owners {
   uint256 length;
-  PublicKey[64] data;
+  PublicKey[64] publicKeys;
 }
 
 error IndexOutOfBounds();

@@ -71,14 +71,14 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       if (ownerIndex == type(uint256).max) revert OwnerDoesNotExist(ownersToRemove[removeIndex].toAddress());
       if (--ownerCount == 0) break;
       owners[ownerIndex] = addIndex < ownersToAdd.length ? ownersToAdd[addIndex++] : owners[ownerCount];
-      ownersStorage.data[ownerIndex] = owners[ownerIndex];
+      ownersStorage.publicKeys[ownerIndex] = owners[ownerIndex];
     }
 
     for (; addIndex < ownersToAdd.length; ++addIndex) {
       if (owners.contains(ownersToAdd[addIndex], ownerCount)) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
 
       owners[ownerCount] = ownersToAdd[addIndex];
-      ownersStorage.data[ownerCount] = owners[ownerCount];
+      ownersStorage.publicKeys[ownerCount] = owners[ownerCount];
       ++ownerCount;
     }
     ownersStorage.length = ownerCount;
@@ -287,7 +287,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     Owners storage ownersStorage = _owners[account];
     uint256 ownerCount = ownersStorage.length;
     for (index = 0; index < ownerCount; ++index) {
-      if (ownersStorage.data[index].equals(owner)) return index;
+      if (ownersStorage.publicKeys[index].equals(owner)) return index;
     }
     revert OwnerDoesNotExist(owner.toAddress());
   }
