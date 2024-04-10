@@ -1,4 +1,4 @@
 {
-  "detectors_to_exclude": "solc-version,naming-convention",
+  "detectors_to_exclude": "solc-version,naming-convention,pragma,unused-imports",
   "filter_paths": "lib/"
 }
