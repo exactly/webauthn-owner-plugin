@@ -14,13 +14,18 @@ import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { WebauthnOwnerPlugin, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
+import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
+import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
+
+import { WebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 
 // solhint-disable func-name-mixedcase
 contract MultiOwnerPluginTest is Test {
   using TestLib for address;
+  using Utils for uint256;
+  using Utils for bytes32;
   using ECDSA for bytes32;
 
   WebauthnOwnerPlugin public plugin;
@@ -36,6 +41,8 @@ contract MultiOwnerPluginTest is Test {
   address public ownerOfContractOwner;
   uint256 public ownerOfContractOwnerKey;
   ContractOwner public contractOwner;
+  PublicKey public passkeyOwner;
+  uint256 public passkeyOwnerKey;
   address[] public ownerArray;
 
   // Re-declare events for vm.expectEmit
@@ -52,6 +59,11 @@ contract MultiOwnerPluginTest is Test {
     owner3 = makeAddr("owner3");
     (ownerOfContractOwner, ownerOfContractOwnerKey) = makeAddrAndKey("ownerOfContractOwner");
     contractOwner = new ContractOwner(ownerOfContractOwner);
+    passkeyOwner = abi.decode(
+      hex"1c05286fe694493eae33312f2d2e0d0abeda8db76238b7a204be1fb87f54ce4228fef61ef4ac300f631657635c28e59bfb2fe71bce1634c81c65642042f6dc4d",
+      (PublicKey)
+    );
+    passkeyOwnerKey = uint256(0x03d99692017473e2d631945a812607b23269d85721e0f370b8d3e7d29a874fd2);
 
     // set up owners for accountA
     ownerArray = new address[](3);
@@ -194,6 +206,34 @@ contract MultiOwnerPluginTest is Test {
     );
   }
 
+  function testFuzz_isValidSignature_PasskeyOwner(bytes32 digest) external {
+    WebAuthnInfo memory webauthn = plugin.getMessageHash(address(accountA), abi.encode(digest)).getWebAuthnStruct();
+    (bytes32 r, bytes32 s) = vm.signP256(passkeyOwnerKey, webauthn.messageHash);
+    SignatureWrapper memory sig = SignatureWrapper({
+      ownerIndex: 0,
+      signatureData: abi.encode(
+        WebAuthn.WebAuthnAuth({
+          authenticatorData: webauthn.authenticatorData,
+          clientDataJSON: webauthn.clientDataJSON,
+          typeIndex: 1,
+          challengeIndex: 23,
+          r: uint256(r),
+          s: uint256(s).normalizeS()
+        })
+      )
+    });
+
+    assertEq(bytes4(0xFFFFFFFF), plugin.isValidSignature(digest, abi.encode(sig)));
+
+    PublicKey[] memory ownersToAdd = new PublicKey[](1);
+    ownersToAdd[0] = passkeyOwner;
+    plugin.updateOwnersPublicKeys(ownersToAdd, new PublicKey[](0));
+    sig.ownerIndex = plugin.ownerIndexOf(accountA, passkeyOwner);
+
+    // sig check should pass
+    assertEq(_1271_MAGIC_VALUE, plugin.isValidSignature(digest, abi.encode(sig)));
+  }
+
   function testFuzz_isValidSignature_ContractOwner(bytes32 digest) external {
     address[] memory ownersToAdd = new address[](1);
     ownersToAdd[0] = address(contractOwner);
@@ -311,6 +351,44 @@ contract MultiOwnerPluginTest is Test {
 
     userOp.signature =
       abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, signer.toPublicKey()), abi.encodePacked(r, s, v)));
+    // should pass with owner access
+    uint256 resSuccess =
+      plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);
+    assertEq(resSuccess, 0);
+  }
+
+  function testFuzz_userOpValidationFunction_PasskeyOwner(UserOperation memory userOp) external {
+    bytes32 userOpHash = entryPoint.getUserOpHash(userOp);
+    WebAuthnInfo memory webauthn = userOpHash.toEthSignedMessageHash().getWebAuthnStruct();
+    (bytes32 r, bytes32 s) = vm.signP256(passkeyOwnerKey, webauthn.messageHash);
+    SignatureWrapper memory sig = SignatureWrapper({
+      ownerIndex: 0,
+      signatureData: abi.encode(
+        WebAuthn.WebAuthnAuth({
+          authenticatorData: webauthn.authenticatorData,
+          clientDataJSON: webauthn.clientDataJSON,
+          typeIndex: 1,
+          challengeIndex: 23,
+          r: uint256(r),
+          s: uint256(s).normalizeS()
+        })
+      )
+    });
+
+    // sig cannot cover the whole user-op struct since user-op struct has sig field
+    userOp.signature = abi.encode(sig);
+
+    // should fail without owner access
+    uint256 resFail =
+      plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);
+    assertEq(resFail, 1);
+
+    PublicKey[] memory ownersToAdd = new PublicKey[](1);
+    ownersToAdd[0] = passkeyOwner;
+    plugin.updateOwnersPublicKeys(ownersToAdd, new PublicKey[](0));
+    sig.ownerIndex = plugin.ownerIndexOf(accountA, passkeyOwner);
+    userOp.signature = abi.encode(sig);
+
     // should pass with owner access
     uint256 resSuccess =
       plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);
