@@ -186,7 +186,8 @@ contract MultiOwnerPluginTest is Test {
     assertEq(
       _1271_MAGIC_VALUE,
       plugin.isValidSignature(
-        digest, abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, signer.toBytes()), abi.encodePacked(r, s, v)))
+        digest,
+        abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, signer.toPublicKey()), abi.encodePacked(r, s, v)))
       )
     );
   }
@@ -199,7 +200,7 @@ contract MultiOwnerPluginTest is Test {
     bytes32 messageDigest = plugin.getMessageHash(address(accountA), abi.encode(digest));
     bytes memory signature = abi.encode(
       SignatureWrapper(
-        plugin.ownerIndexOf(accountA, address(contractOwner).toBytes()), contractOwner.sign(messageDigest)
+        plugin.ownerIndexOf(accountA, address(contractOwner).toPublicKey()), contractOwner.sign(messageDigest)
       )
     );
     assertEq(_1271_MAGIC_VALUE, plugin.isValidSignature(digest, signature));
@@ -214,7 +215,7 @@ contract MultiOwnerPluginTest is Test {
     // owner3 is the EOA Owner of the contractOwner
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerOfContractOwnerKey, messageDigest);
     bytes memory signature = abi.encode(
-      SignatureWrapper(plugin.ownerIndexOf(accountA, address(contractOwner).toBytes()), abi.encodePacked(r, s, v))
+      SignatureWrapper(plugin.ownerIndexOf(accountA, address(contractOwner).toPublicKey()), abi.encodePacked(r, s, v))
     );
     assertEq(_1271_MAGIC_VALUE, plugin.isValidSignature(digest, signature));
   }
@@ -251,7 +252,7 @@ contract MultiOwnerPluginTest is Test {
     plugin.updateOwners(ownersToAdd, new address[](0));
 
     userOp.signature =
-      abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, address(contractOwner).toBytes()), signature));
+      abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, address(contractOwner).toPublicKey()), signature));
     // should pass with owner access
     uint256 resSuccess =
       plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);
@@ -275,7 +276,7 @@ contract MultiOwnerPluginTest is Test {
     plugin.updateOwners(ownersToAdd, new address[](0));
 
     userOp.signature = abi.encode(
-      SignatureWrapper(plugin.ownerIndexOf(accountA, address(contractOwner).toBytes()), abi.encodePacked(r, s, v))
+      SignatureWrapper(plugin.ownerIndexOf(accountA, address(contractOwner).toPublicKey()), abi.encodePacked(r, s, v))
     );
     // should pass with owner access
     uint256 resSuccess =
@@ -307,7 +308,7 @@ contract MultiOwnerPluginTest is Test {
     }
 
     userOp.signature =
-      abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, signer.toBytes()), abi.encodePacked(r, s, v)));
+      abi.encode(SignatureWrapper(plugin.ownerIndexOf(accountA, signer.toPublicKey()), abi.encodePacked(r, s, v)));
     // should pass with owner access
     uint256 resSuccess =
       plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);

@@ -23,12 +23,12 @@ import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
 import { OwnersLib, Owners } from "./OwnersLib.sol";
-import { IWebauthnOwnerPlugin, IMultiOwnerPlugin, SignatureWrapper } from "./IWebauthnOwnerPlugin.sol";
+import { IWebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey, SignatureWrapper } from "./IWebauthnOwnerPlugin.sol";
 
 contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   using SignatureCheckerLib for address;
-  using OwnersLib for bytes32[2][64];
-  using OwnersLib for bytes32[2];
+  using OwnersLib for PublicKey[64];
+  using OwnersLib for PublicKey;
   using OwnersLib for address[];
   using OwnersLib for Owners;
   using ECDSA for bytes32;
@@ -52,17 +52,17 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     external
     isInitialized(msg.sender)
   {
-    updateOwnersBytes(ownersToAdd.toBytes(), ownersToRemove.toBytes());
+    updateOwnersPublicKeys(ownersToAdd.toPublicKey(), ownersToRemove.toPublicKey());
 
     emit OwnerUpdated(msg.sender, ownersToAdd, ownersToRemove);
   }
 
-  function updateOwnersBytes(bytes32[2][] memory ownersToAdd, bytes32[2][] memory ownersToRemove)
+  function updateOwnersPublicKeys(PublicKey[] memory ownersToAdd, PublicKey[] memory ownersToRemove)
     public
     isInitialized(msg.sender)
   {
     Owners storage ownersStorage = _owners[msg.sender];
-    bytes32[2][64] memory owners = ownersStorage.allFixed();
+    PublicKey[64] memory owners = ownersStorage.allFixed();
 
     for (uint256 i = 0; i < ownersToRemove.length; ++i) {
       if (!owners.contains(ownersToRemove[i])) revert OwnerDoesNotExist(ownersToRemove[i].toAddress());
@@ -131,7 +131,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
     (address[] memory initialOwners) = abi.decode(data, (address[]));
     if (initialOwners.length == 0) revert EmptyOwnersNotAllowed();
-    _owners[msg.sender].push(initialOwners.toBytes());
+    _owners[msg.sender].push(initialOwners.toPublicKey());
     emit OwnerUpdated(msg.sender, initialOwners, new address[](0));
   }
 
@@ -172,7 +172,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     manifest.executionFunctions[0] = this.updateOwners.selector;
     manifest.executionFunctions[1] = this.eip712Domain.selector;
     manifest.executionFunctions[2] = this.isValidSignature.selector;
-    manifest.executionFunctions[3] = this.updateOwnersBytes.selector;
+    manifest.executionFunctions[3] = this.updateOwnersPublicKeys.selector;
 
     ManifestFunction memory ownerUserOpValidationFunction = ManifestFunction({
       functionType: ManifestAssociatedFunctionType.SELF,
@@ -206,7 +206,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[6] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwnersBytes.selector,
+      executionSelector: this.updateOwnersPublicKeys.selector,
       associatedFunction: ownerUserOpValidationFunction
     });
 
@@ -255,7 +255,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       associatedFunction: alwaysAllowFunction
     });
     manifest.runtimeValidationFunctions[8] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwnersBytes.selector,
+      executionSelector: this.updateOwnersPublicKeys.selector,
       associatedFunction: alwaysAllowFunction
     });
   }
@@ -272,7 +272,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       permissionDescription: modifyOwnershipPermission
     });
     metadata.permissionDescriptors[1] = SelectorPermission({
-      functionSelector: this.updateOwnersBytes.selector,
+      functionSelector: this.updateOwnersPublicKeys.selector,
       permissionDescription: modifyOwnershipPermission
     });
   }
@@ -293,11 +293,11 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     owners = _owners[account].allAddresses();
   }
 
-  function ownersBytesOf(address account) external view returns (bytes32[2][] memory owners) {
+  function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners) {
     owners = _owners[account].all();
   }
 
-  function ownerIndexOf(address account, bytes32[2] calldata owner) external view returns (uint256 index) {
+  function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint256 index) {
     Owners storage ownersStorage = _owners[account];
     uint256 ownerCount = ownersStorage.length;
     for (index = 0; index < ownerCount; ++index) {
@@ -323,19 +323,19 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
 
   function _validateSignature(address account, bytes32 message, bytes calldata signature) internal view returns (bool) {
     SignatureWrapper memory sigWrapper = abi.decode(signature, (SignatureWrapper));
-    bytes32[2] memory owner = _owners[account].get(sigWrapper.ownerIndex);
+    PublicKey memory owner = _owners[account].get(sigWrapper.ownerIndex);
 
-    if (owner[1] == bytes32(0)) {
-      if (uint256(bytes32(owner[0])) > type(uint160).max) revert InvalidEthereumAddressOwner(owner[0]);
-      return address(uint160(uint256(owner[0]))).isValidSignatureNow(message, sigWrapper.signatureData);
+    if (owner.y == 0) {
+      if (owner.x > type(uint160).max) revert InvalidEthereumAddressOwner(bytes32(owner.x));
+      return address(uint160(owner.x)).isValidSignatureNow(message, sigWrapper.signatureData);
     }
 
     return WebAuthn.verify({
       challenge: abi.encode(message),
       requireUV: false,
       webAuthnAuth: abi.decode(sigWrapper.signatureData, (WebAuthn.WebAuthnAuth)),
-      x: uint256(owner[0]),
-      y: uint256(owner[1])
+      x: owner.x,
+      y: owner.y
     });
   }
 

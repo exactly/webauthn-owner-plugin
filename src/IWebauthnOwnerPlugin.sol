@@ -8,12 +8,12 @@ interface IWebauthnOwnerPlugin is IMultiOwnerPlugin {
   /// @param account The account whose ownership changed.
   /// @param addedOwners The address array of added owners.
   /// @param removedOwners The address array of removed owners.
-  event OwnerUpdated(address indexed account, bytes32[2][] addedOwners, bytes32[2][] removedOwners);
+  event OwnerUpdated(address indexed account, PublicKey[] addedOwners, PublicKey[] removedOwners);
 
   error InvalidEthereumAddressOwner(bytes32 owner);
 
-  function ownersBytesOf(address account) external view returns (bytes32[2][] memory owners);
-  function ownerIndexOf(address account, bytes32[2] calldata owner) external view returns (uint256 index);
+  function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners);
+  function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint256 index);
 }
 
 struct PublicKey {

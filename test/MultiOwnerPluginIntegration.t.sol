@@ -91,28 +91,29 @@ contract MultiOwnerPluginIntegration is Test {
         keccak256(abi.encodePacked("\x19\x01", keccak256(abi.encode(user1, block.chainid)), abi.encode(digest)));
       (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(owner1Key, messageDigestBad);
       signature = abi.encode(
-        SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toBytes()), abi.encodePacked(r0, s0, v0))
+        SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toPublicKey()), abi.encodePacked(r0, s0, v0))
       );
       assertEq(_1271_MAGIC_VALUE_FAILURE, IERC1271(address(account)).isValidSignature(digest, signature));
     }
 
     // should pass for sig from owner1
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(owner1Key, messageDigest);
-    signature =
-      abi.encode(SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toBytes()), abi.encodePacked(r, s, v)));
+    signature = abi.encode(
+      SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toPublicKey()), abi.encodePacked(r, s, v))
+    );
     assertEq(_1271_MAGIC_VALUE, IERC1271(address(account)).isValidSignature(digest, signature));
 
     // should pass for sig from owner2
     (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(owner2Key, messageDigest);
     signature = abi.encode(
-      SignatureWrapper(plugin.ownerIndexOf(address(account), owner2.toBytes()), abi.encodePacked(r1, s1, v1))
+      SignatureWrapper(plugin.ownerIndexOf(address(account), owner2.toPublicKey()), abi.encodePacked(r1, s1, v1))
     );
     assertEq(_1271_MAGIC_VALUE, IERC1271(address(account)).isValidSignature(digest, signature));
 
     // should fail for sig NOT from owner
     (uint8 v2, bytes32 r2, bytes32 s2) = vm.sign(user1Key, messageDigest);
     signature = abi.encode(
-      SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toBytes()), abi.encodePacked(r2, s2, v2))
+      SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toPublicKey()), abi.encodePacked(r2, s2, v2))
     );
     assertEq(_1271_MAGIC_VALUE_FAILURE, IERC1271(address(account)).isValidSignature(digest, signature));
   }
@@ -157,8 +158,9 @@ contract MultiOwnerPluginIntegration is Test {
     // should send 1 ETH to user1 by owner
     bytes32 userOpHash = entryPoint.getUserOpHash(userOp);
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(owner1Key, userOpHash.toEthSignedMessageHash());
-    userOp.signature =
-      abi.encode(SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toBytes()), abi.encodePacked(r, s, v)));
+    userOp.signature = abi.encode(
+      SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toPublicKey()), abi.encodePacked(r, s, v))
+    );
     UserOperation[] memory userOps = new UserOperation[](1);
     userOps[0] = userOp;
     uint256 startBal = user1.balance;
@@ -170,7 +172,7 @@ contract MultiOwnerPluginIntegration is Test {
     bytes32 userOpHash2 = entryPoint.getUserOpHash(userOp);
     (uint8 v2, bytes32 r2, bytes32 s2) = vm.sign(user1Key, userOpHash2.toEthSignedMessageHash());
     userOp.signature = abi.encode(
-      SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toBytes()), abi.encodePacked(r2, s2, v2))
+      SignatureWrapper(plugin.ownerIndexOf(address(account), owner1.toPublicKey()), abi.encodePacked(r2, s2, v2))
     );
     UserOperation[] memory userOps2 = new UserOperation[](1);
     userOps2[0] = userOp;
