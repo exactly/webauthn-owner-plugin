@@ -63,34 +63,20 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   {
     Owners storage ownersStorage = _owners[msg.sender];
     PublicKey[64] memory owners = ownersStorage.allFixed();
-
-    for (uint256 i = 0; i < ownersToRemove.length; ++i) {
-      if (!owners.contains(ownersToRemove[i])) revert OwnerDoesNotExist(ownersToRemove[i].toAddress());
-    }
-
     uint256 ownerCount = ownersStorage.length;
     uint256 addIndex = 0;
-    for (uint256 i = 0; i < ownerCount; ++i) {
-      for (uint256 j = 0; j < ownersToRemove.length;) {
-        if (owners[i].equals(ownersToRemove[j])) {
-          --ownerCount;
-          if (addIndex < ownersToAdd.length) {
-            owners[i] = ownersToAdd[addIndex++];
-          } else if (i < ownerCount) {
-            owners[i] = owners[ownerCount];
-            j = 0;
-          }
-          ownersStorage.data[i] = owners[i];
-          if (ownerCount == 0) break;
-        } else {
-          ++j;
-        }
-      }
+
+    for (uint256 removeIndex = 0; removeIndex < ownersToRemove.length; ++removeIndex) {
+      uint256 ownerIndex = owners.find(ownersToRemove[removeIndex], ownerCount);
+      if (ownerIndex == type(uint256).max) revert OwnerDoesNotExist(ownersToRemove[removeIndex].toAddress());
+      if (--ownerCount == 0) break;
+      owners[ownerIndex] = addIndex < ownersToAdd.length ? ownersToAdd[addIndex++] : owners[ownerCount];
+      ownersStorage.data[ownerIndex] = owners[ownerIndex];
     }
+
     for (; addIndex < ownersToAdd.length; ++addIndex) {
-      for (uint256 i = 0; i < ownerCount; ++i) {
-        if (owners[i].equals(ownersToAdd[addIndex])) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
-      }
+      if (owners.contains(ownersToAdd[addIndex], ownerCount)) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
+
       owners[ownerCount] = ownersToAdd[addIndex];
       ownersStorage.data[ownerCount] = owners[ownerCount];
       ++ownerCount;

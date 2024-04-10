@@ -38,9 +38,9 @@ library OwnersLib {
   }
 
   function allFixed(Owners storage owners) internal view returns (PublicKey[64] memory array) {
-    for (uint256 i = 0; i < array.length; ++i) {
+    uint256 length = owners.length;
+    for (uint256 i = 0; i < length; ++i) {
       array[i] = owners.data[i];
-      if (array[i].x == 0) break;
     }
   }
 
@@ -53,12 +53,18 @@ library OwnersLib {
     return false;
   }
 
-  function contains(PublicKey[64] memory array, PublicKey memory owner) internal pure returns (bool) {
-    for (uint256 i = 0; i < array.length; ++i) {
+  function contains(PublicKey[64] memory array, PublicKey memory owner, uint256 length) internal pure returns (bool) {
+    for (uint256 i = 0; i < length; ++i) {
       if (array[i].x == owner.x && array[i].y == owner.y) return true;
-      if (array[i].x == 0) break;
     }
     return false;
+  }
+
+  function find(PublicKey[64] memory array, PublicKey memory owner, uint256 length) internal pure returns (uint256) {
+    for (uint256 i = 0; i < length; ++i) {
+      if (array[i].x == owner.x && array[i].y == owner.y) return i;
+    }
+    return type(uint256).max;
   }
 
   function toPublicKey(address[] memory addresses) internal pure returns (PublicKey[] memory publicKeys) {
