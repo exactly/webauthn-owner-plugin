@@ -14,11 +14,13 @@ import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { WebauthnOwnerPlugin, SignatureWrapper, OwnersLib } from "../src/WebauthnOwnerPlugin.sol";
+import { WebauthnOwnerPlugin, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
+
+import { TestLib } from "./utils/TestLib.sol";
 
 // solhint-disable func-name-mixedcase
 contract MultiOwnerPluginTest is Test {
-  using OwnersLib for address;
+  using TestLib for address;
   using ECDSA for bytes32;
 
   WebauthnOwnerPlugin public plugin;

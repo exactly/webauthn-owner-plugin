@@ -16,11 +16,13 @@ import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.s
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { WebauthnOwnerPlugin, SignatureWrapper, OwnersLib } from "../src/WebauthnOwnerPlugin.sol";
+import { WebauthnOwnerPlugin, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
+
+import { TestLib } from "./utils/TestLib.sol";
 
 // solhint-disable func-name-mixedcase
 contract MultiOwnerPluginIntegration is Test {
-  using OwnersLib for address;
+  using TestLib for address;
   using ECDSA for bytes32;
 
   // bytes4(keccak256("isValidSignature(bytes32,bytes)"))

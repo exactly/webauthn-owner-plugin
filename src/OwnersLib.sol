@@ -61,10 +61,6 @@ library OwnersLib {
     return false;
   }
 
-  function toPublicKey(address ownerAddress) internal pure returns (PublicKey memory) {
-    return PublicKey(uint256(uint160(ownerAddress)), 0);
-  }
-
   function toPublicKey(address[] memory addresses) internal pure returns (PublicKey[] memory publicKeys) {
     publicKeys = new PublicKey[](addresses.length);
     for (uint256 i = 0; i < addresses.length; ++i) {
