@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.25;
 
-import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
-
 import { UpgradeableModularAccount, UUPSUpgradeable } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
 import {
@@ -16,6 +14,8 @@ import {
 import { IStandardExecutor } from "modular-account/src/interfaces/IStandardExecutor.sol";
 import { SIG_VALIDATION_PASSED, SIG_VALIDATION_FAILED } from "modular-account/src/libraries/Constants.sol";
 import { BasePlugin } from "modular-account/src/plugins/BasePlugin.sol";
+
+import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.sol";
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";

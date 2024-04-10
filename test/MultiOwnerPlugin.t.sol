@@ -3,8 +3,6 @@ pragma solidity ^0.8.25;
 
 import { Test } from "forge-std/Test.sol";
 
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
 import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
@@ -13,6 +11,8 @@ import { PluginManifest } from "modular-account/src/interfaces/IPlugin.sol";
 import { BasePlugin } from "modular-account/src/plugins/BasePlugin.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
 import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
+
+import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { WebauthnOwnerPlugin, SignatureWrapper, OwnersLib } from "../src/WebauthnOwnerPlugin.sol";
 
