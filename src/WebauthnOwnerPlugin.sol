@@ -61,27 +61,23 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     public
     isInitialized(msg.sender)
   {
-    Owners storage ownersStorage = _owners[msg.sender];
-    PublicKey[64] memory owners = ownersStorage.allFixed();
-    uint256 ownerCount = ownersStorage.length;
+    Owners storage owners = _owners[msg.sender];
+    (uint256 ownerCount, PublicKey[64] memory keys) = owners.all64();
     uint256 addIndex = 0;
-
     for (uint256 removeIndex = 0; removeIndex < ownersToRemove.length; ++removeIndex) {
-      uint256 ownerIndex = owners.find(ownersToRemove[removeIndex], ownerCount);
+      uint256 ownerIndex = keys.find(ownersToRemove[removeIndex], ownerCount);
       if (ownerIndex == type(uint256).max) revert OwnerDoesNotExist(ownersToRemove[removeIndex].toAddress());
       if (--ownerCount == 0) break;
-      owners[ownerIndex] = addIndex < ownersToAdd.length ? ownersToAdd[addIndex++] : owners[ownerCount];
-      ownersStorage.publicKeys[ownerIndex] = owners[ownerIndex];
+      keys[ownerIndex] = addIndex < ownersToAdd.length ? ownersToAdd[addIndex++] : keys[ownerCount];
+      owners.publicKeys[ownerIndex] = keys[ownerIndex];
     }
-
     for (; addIndex < ownersToAdd.length; ++addIndex) {
-      if (owners.contains(ownersToAdd[addIndex], ownerCount)) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
-
-      owners[ownerCount] = ownersToAdd[addIndex];
-      ownersStorage.publicKeys[ownerCount] = owners[ownerCount];
+      if (keys.contains(ownersToAdd[addIndex], ownerCount)) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
+      keys[ownerCount] = ownersToAdd[addIndex];
+      owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
     }
-    ownersStorage.length = ownerCount;
+    owners.length = ownerCount;
 
     if (ownerCount == 0) revert EmptyOwnersNotAllowed();
 
@@ -284,10 +280,10 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   }
 
   function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint256 index) {
-    Owners storage ownersStorage = _owners[account];
-    uint256 ownerCount = ownersStorage.length;
+    Owners storage owners = _owners[account];
+    uint256 ownerCount = owners.length;
     for (index = 0; index < ownerCount; ++index) {
-      if (ownersStorage.publicKeys[index].equals(owner)) return index;
+      if (owners.publicKeys[index].equals(owner)) return index;
     }
     revert OwnerDoesNotExist(owner.toAddress());
   }

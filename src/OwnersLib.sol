@@ -37,8 +37,8 @@ library OwnersLib {
     }
   }
 
-  function allFixed(Owners storage owners) internal view returns (PublicKey[64] memory publicKeys) {
-    uint256 length = owners.length;
+  function all64(Owners storage owners) internal view returns (uint256 length, PublicKey[64] memory publicKeys) {
+    length = owners.length;
     for (uint256 i = 0; i < length; ++i) {
       publicKeys[i] = owners.publicKeys[i];
     }
