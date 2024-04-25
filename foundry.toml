@@ -14,3 +14,7 @@ number_underscore = "thousands"
 [rpc_endpoints]
 optimism = "${OPTIMISM_RPC_URL}"
 optimism_sepolia = "${OPTIMISM_SEPOLIA_RPC_URL}"
+
+[etherscan]
+optimism = { key = "${OPTIMISM_ETHERSCAN_KEY}" }
+optimism_sepolia = { key = "${OPTIMISM_SEPOLIA_ETHERSCAN_KEY}" }
