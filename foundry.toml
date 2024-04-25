@@ -10,3 +10,7 @@ isolate = true
 tab_width = 2
 bracket_spacing = true
 number_underscore = "thousands"
+
+[rpc_endpoints]
+optimism = "${OPTIMISM_RPC_URL}"
+optimism_sepolia = "${OPTIMISM_SEPOLIA_RPC_URL}"
