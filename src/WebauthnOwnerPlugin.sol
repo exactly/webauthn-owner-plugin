@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.0;
 
 import { UpgradeableModularAccount, UUPSUpgradeable } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
