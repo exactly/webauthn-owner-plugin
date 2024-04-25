@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import { Test } from "forge-std/Test.sol";
 
-import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
-
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
 import { PluginManifest } from "modular-account/src/interfaces/IPlugin.sol";
@@ -17,6 +15,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
 
+import { DeployScript } from "../script/Deploy.s.sol";
 import { WebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
@@ -49,10 +48,13 @@ contract MultiOwnerPluginTest is Test {
   event OwnerUpdated(address indexed account, address[] addedOwners, address[] removedOwners);
 
   function setUp() external {
-    plugin = new WebauthnOwnerPlugin();
-    entryPoint = IEntryPoint(address(new EntryPoint()));
+    DeployScript deploy = new DeployScript();
+    entryPoint = deploy.ENTRYPOINT();
+    vm.etch(address(entryPoint), vm.getDeployedCode("EntryPoint.sol:EntryPoint"));
+    deploy.run();
+    plugin = deploy.plugin();
 
-    accountA = address(new EntryPoint());
+    accountA = address(entryPoint);
     b = makeAddr("b");
     owner1 = makeAddr("owner1");
     owner2 = makeAddr("owner2");

@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import { Test } from "forge-std/Test.sol";
 
-import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
-
 import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { MultiOwnerModularAccountFactory } from "modular-account/src/factory/MultiOwnerModularAccountFactory.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
@@ -16,6 +14,7 @@ import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.s
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
+import { DeployScript } from "../script/Deploy.s.sol";
 import { WebauthnOwnerPlugin, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
@@ -48,23 +47,19 @@ contract MultiOwnerPluginIntegration is Test {
   address[] public owners;
 
   function setUp() external {
+    DeployScript deploy = new DeployScript();
+    entryPoint = deploy.ENTRYPOINT();
+    vm.etch(address(entryPoint), vm.getDeployedCode("EntryPoint.sol:EntryPoint"));
+    deploy.run();
+    plugin = deploy.plugin();
+    factory = deploy.factory();
+
     // setup dependencies and helper contract
     counter = new Counter();
-    entryPoint = IEntryPoint(address(new EntryPoint()));
     beneficiary = payable(makeAddr("beneficiary"));
     (user1, user1Key) = makeAddrAndKey("user1");
     (owner1, owner1Key) = makeAddrAndKey("owner1");
     (owner2, owner2Key) = makeAddrAndKey("owner2");
-
-    // setup plugins and factory
-    plugin = new WebauthnOwnerPlugin();
-    factory = new MultiOwnerModularAccountFactory(
-      address(this),
-      address(plugin),
-      address(new UpgradeableModularAccount(IEntryPoint(address(entryPoint)))),
-      keccak256(abi.encode(plugin.pluginManifest())),
-      entryPoint
-    );
 
     // setup account with MultiOwnerModularAccountFactory
     owners = new address[](2);
