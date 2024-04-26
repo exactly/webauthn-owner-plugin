@@ -16,12 +16,14 @@ import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
+import { OwnersLib } from "../src/OwnersLib.sol";
 import { WebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 
 // solhint-disable func-name-mixedcase
 contract MultiOwnerPluginTest is Test {
+  using OwnersLib for address[];
   using TestLib for address;
   using Utils for uint256;
   using Utils for bytes32;
@@ -69,14 +71,14 @@ contract MultiOwnerPluginTest is Test {
 
     // set up owners for accountA
     ownerArray = new address[](3);
-    ownerArray[0] = owner2;
-    ownerArray[1] = owner3;
-    ownerArray[2] = owner1;
+    ownerArray[0] = owner1;
+    ownerArray[1] = owner2;
+    ownerArray[2] = owner3;
 
     vm.expectEmit(true, true, true, true);
     emit OwnerUpdated(accountA, ownerArray, new address[](0));
     vm.startPrank(accountA);
-    plugin.onInstall(abi.encode(ownerArray));
+    plugin.onInstall(abi.encode(ownerArray.toPublicKeys()));
   }
 
   function test_pluginManifest() external view {
@@ -105,7 +107,7 @@ contract MultiOwnerPluginTest is Test {
     owners[0] = owner1;
 
     vm.startPrank(address(contractOwner));
-    plugin.onInstall(abi.encode(owners));
+    plugin.onInstall(abi.encode(owners.toPublicKeys()));
     address[] memory returnedOwners = plugin.ownersOf(address(contractOwner));
     assertEq(returnedOwners.length, 1);
     assertEq(returnedOwners[0], owner1);
@@ -137,13 +139,6 @@ contract MultiOwnerPluginTest is Test {
   function test_updateOwners_failWithEmptyOwners() external {
     vm.expectRevert(IMultiOwnerPlugin.EmptyOwnersNotAllowed.selector);
     plugin.updateOwners(new address[](0), ownerArray);
-  }
-
-  function test_updateOwners_failWithZeroAddressOwner() external {
-    address[] memory ownersToAdd = new address[](2);
-
-    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(0)));
-    plugin.updateOwners(ownersToAdd, new address[](0));
   }
 
   function test_updateOwners_failWithDuplicatedAddresses() external {

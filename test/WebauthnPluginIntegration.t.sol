@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import { Test } from "forge-std/Test.sol";
 
 import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
-import { MultiOwnerModularAccountFactory } from "modular-account/src/factory/MultiOwnerModularAccountFactory.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
@@ -15,12 +14,15 @@ import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.s
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
+import { OwnersLib } from "../src/OwnersLib.sol";
+import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
 import { WebauthnOwnerPlugin, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 
 // solhint-disable func-name-mixedcase
 contract MultiOwnerPluginIntegration is Test {
+  using OwnersLib for address[];
   using TestLib for address;
   using ECDSA for bytes32;
 
@@ -30,7 +32,7 @@ contract MultiOwnerPluginIntegration is Test {
 
   IEntryPoint public entryPoint;
   WebauthnOwnerPlugin public plugin;
-  MultiOwnerModularAccountFactory public factory;
+  WebauthnModularAccountFactory public factory;
 
   Counter public counter;
   address payable public beneficiary;
@@ -61,14 +63,14 @@ contract MultiOwnerPluginIntegration is Test {
     (owner1, owner1Key) = makeAddrAndKey("owner1");
     (owner2, owner2Key) = makeAddrAndKey("owner2");
 
-    // setup account with MultiOwnerModularAccountFactory
+    // setup account with WebauthnModularAccountFactory
     owners = new address[](2);
-    owners[0] = owner1 > owner2 ? owner2 : owner1;
-    owners[1] = owner2 > owner1 ? owner2 : owner1;
-    account = UpgradeableModularAccount(payable(factory.getAddress(0, owners)));
+    owners[0] = owner1;
+    owners[1] = owner2;
+    account = UpgradeableModularAccount(payable(factory.getAddress(0, owners.toPublicKeys())));
     vm.label(address(account), "account");
     vm.deal(address(account), 100 ether);
-    factory.createAccount(0, owners);
+    factory.createAccount(0, owners.toPublicKeys());
   }
 
   function test_ownerPlugin_successInstallation() external view {

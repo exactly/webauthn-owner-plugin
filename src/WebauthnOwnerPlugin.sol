@@ -28,6 +28,7 @@ import { IWebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey, SignatureWrapper } 
 contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   using SignatureCheckerLib for address;
   using OwnersLib for PublicKey[64];
+  using OwnersLib for PublicKey[];
   using OwnersLib for PublicKey;
   using OwnersLib for address[];
   using OwnersLib for Owners;
@@ -52,7 +53,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     external
     isInitialized(msg.sender)
   {
-    updateOwnersPublicKeys(ownersToAdd.toPublicKey(), ownersToRemove.toPublicKey());
+    updateOwnersPublicKeys(ownersToAdd.toPublicKeys(), ownersToRemove.toPublicKeys());
 
     emit OwnerUpdated(msg.sender, ownersToAdd, ownersToRemove);
   }
@@ -77,6 +78,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
     }
+    if (ownerCount > 64) revert OwnersLimitExceeded();
     owners.length = ownerCount;
 
     if (ownerCount == 0) revert EmptyOwnersNotAllowed();
@@ -111,16 +113,28 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
 
   /// @inheritdoc BasePlugin
   function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
-    (address[] memory initialOwners) = abi.decode(data, (address[]));
+    (PublicKey[] memory initialOwners) = abi.decode(data, (PublicKey[]));
     if (initialOwners.length == 0) revert EmptyOwnersNotAllowed();
-    _owners[msg.sender].push(initialOwners.toPublicKey());
-    emit OwnerUpdated(msg.sender, initialOwners, new address[](0));
+    if (initialOwners.length > 64) revert OwnersLimitExceeded();
+
+    uint256 ownerCount = 0;
+    PublicKey[64] memory keys;
+    Owners storage owners = _owners[msg.sender];
+    for (uint256 i = 0; i < initialOwners.length; ++i) {
+      if (keys.contains(initialOwners[i], ownerCount)) revert InvalidOwner(initialOwners[i].toAddress());
+      keys[ownerCount] = initialOwners[i];
+      owners.publicKeys[ownerCount] = keys[ownerCount];
+      ++ownerCount;
+    }
+    owners.length = ownerCount;
+
+    emit OwnerUpdated(msg.sender, initialOwners.toAddresses(), new address[](0));
   }
 
   /// @inheritdoc BasePlugin
   function onUninstall(bytes calldata) external override {
     address[] memory owners = _owners[msg.sender].allAddresses();
-    _owners[msg.sender].reset();
+    _owners[msg.sender].length = 0;
     emit OwnerUpdated(msg.sender, new address[](0), owners);
   }
 

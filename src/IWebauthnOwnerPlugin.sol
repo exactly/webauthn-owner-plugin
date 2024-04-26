@@ -11,6 +11,7 @@ interface IWebauthnOwnerPlugin is IMultiOwnerPlugin {
   event OwnerUpdated(address indexed account, PublicKey[] addedOwners, PublicKey[] removedOwners);
 
   error InvalidEthereumAddressOwner(bytes32 owner);
+  error OwnersLimitExceeded();
 
   function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners);
   function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint256 index);

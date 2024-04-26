@@ -4,18 +4,6 @@ pragma solidity ^0.8.0;
 import { PublicKey } from "./IWebauthnOwnerPlugin.sol";
 
 library OwnersLib {
-  function push(Owners storage owners, PublicKey[] memory values) internal {
-    uint256 length = owners.length;
-    for (uint256 i = 0; i < values.length; ++i) {
-      owners.publicKeys[length + i] = values[i];
-    }
-    owners.length = length + values.length;
-  }
-
-  function reset(Owners storage owners) internal {
-    owners.length = 0;
-  }
-
   function get(Owners storage owners, uint256 index) internal view returns (PublicKey memory) {
     if (index >= owners.length) revert IndexOutOfBounds();
     return owners.publicKeys[index];
@@ -67,7 +55,7 @@ library OwnersLib {
     return type(uint256).max;
   }
 
-  function toPublicKey(address[] memory addresses) internal pure returns (PublicKey[] memory publicKeys) {
+  function toPublicKeys(address[] memory addresses) internal pure returns (PublicKey[] memory publicKeys) {
     publicKeys = new PublicKey[](addresses.length);
     for (uint256 i = 0; i < addresses.length; ++i) {
       publicKeys[i] = PublicKey(uint256(uint160(addresses[i])), 0);
@@ -76,6 +64,13 @@ library OwnersLib {
 
   function toAddress(PublicKey memory owner) internal pure returns (address) {
     return owner.y == 0 ? address(uint160(uint256(owner.x))) : address(bytes20(keccak256(abi.encode(owner))));
+  }
+
+  function toAddresses(PublicKey[] memory owners) internal pure returns (address[] memory addresses) {
+    addresses = new address[](owners.length);
+    for (uint256 i = 0; i < owners.length; ++i) {
+      addresses[i] = toAddress(owners[i]);
+    }
   }
 
   function equals(PublicKey memory a, PublicKey memory b) internal pure returns (bool) {
