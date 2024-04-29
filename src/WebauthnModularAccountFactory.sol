@@ -40,6 +40,10 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     bytes32 webauthnOwnerPluginManifestHash,
     IEntryPoint entryPoint
   ) Ownable(owner) {
+    if (webauthnOwnerPlugin == address(0) || implementation == address(0) || address(entryPoint) == address(0)) {
+      revert InvalidAction();
+    }
+
     WEBAUTHN_OWNER_PLUGIN = webauthnOwnerPlugin;
     IMPL = implementation;
     _WEBAUTHN_OWNER_PLUGIN_MANIFEST_HASH = webauthnOwnerPluginManifestHash;
@@ -124,6 +128,10 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     // This protects against counterfactuals being generated against an exceptionally large number of owners
     // that may exceed the block gas limit when actually creating the account.
     if (owners.length > _MAX_OWNERS_ON_CREATION) revert OwnersLimitExceeded();
+
+    for (uint256 i = 0; i < owners.length; ++i) {
+      if (owners[i].x == 0 && owners[i].x == 0) revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
+    }
 
     return Create2.computeAddress(
       salt.getCombinedSalt(abi.encode(owners)),

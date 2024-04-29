@@ -73,7 +73,12 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       owners.publicKeys[ownerIndex] = keys[ownerIndex];
     }
     for (; addIndex < ownersToAdd.length; ++addIndex) {
-      if (keys.contains(ownersToAdd[addIndex], ownerCount)) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
+      if (
+        (ownersToAdd[addIndex].x == 0 && ownersToAdd[addIndex].y == 0)
+          || keys.contains(ownersToAdd[addIndex], ownerCount)
+      ) {
+        revert InvalidOwner(ownersToAdd[addIndex].toAddress());
+      }
       keys[ownerCount] = ownersToAdd[addIndex];
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
@@ -121,7 +126,9 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     PublicKey[64] memory keys;
     Owners storage owners = _owners[msg.sender];
     for (uint256 i = 0; i < initialOwners.length; ++i) {
-      if (keys.contains(initialOwners[i], ownerCount)) revert InvalidOwner(initialOwners[i].toAddress());
+      if ((initialOwners[i].x == 0 && initialOwners[i].y == 0) || keys.contains(initialOwners[i], ownerCount)) {
+        revert InvalidOwner(initialOwners[i].toAddress());
+      }
       keys[ownerCount] = initialOwners[i];
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;

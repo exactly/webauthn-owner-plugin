@@ -96,10 +96,10 @@ contract WebauthnModularAccountFactoryTest is Test {
     vm.expectRevert(IMultiOwnerPlugin.EmptyOwnersNotAllowed.selector);
     factory.getAddress(0, new PublicKey[](0));
 
-    // address[] memory badOwners = new address[](2);
+    address[] memory badOwners = new address[](2);
 
-    // vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(0)));
-    // factory.getAddress(0, badOwners.toPublicKeys());
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(0)));
+    factory.getAddress(0, badOwners.toPublicKeys());
 
     // badOwners[0] = address(1);
     // badOwners[1] = address(1);
