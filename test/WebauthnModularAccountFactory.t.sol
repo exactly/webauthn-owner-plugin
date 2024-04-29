@@ -32,6 +32,12 @@ contract WebauthnModularAccountFactoryTest is Test {
   address[] public owners;
   address[] public largeOwners;
 
+  PublicKey public passkeyOwner = abi.decode(
+    hex"1c05286fe694493eae33312f2d2e0d0abeda8db76238b7a204be1fb87f54ce4228fef61ef4ac300f631657635c28e59bfb2fe71bce1634c81c65642042f6dc4d",
+    (PublicKey)
+  );
+  uint256 public passkeyOwnerKey = uint256(0x03d99692017473e2d631945a812607b23269d85721e0f370b8d3e7d29a874fd2);
+
   bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
   uint256 internal constant _MAX_OWNERS_ON_CREATION = 64;
 
@@ -68,6 +74,20 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(actualOwners.length, 2);
     assertEq(actualOwners[0], owner1);
     assertEq(actualOwners[1], owner2);
+  }
+
+  function test_deploy_PasskeyOwner() public {
+    PublicKey[] memory ownerKeys = new PublicKey[](1);
+    ownerKeys[0] = passkeyOwner;
+    address deployed = factory.createAccount(0, ownerKeys);
+
+    // test that the deployed account is initialized
+    assertEq(address(UpgradeableModularAccount(payable(deployed)).entryPoint()), address(entryPoint));
+
+    // test that the deployed account installed owner plugin correctly
+    PublicKey[] memory actualOwners = plugin.ownersPublicKeysOf(deployed);
+    assertEq(actualOwners.length, 1);
+    assertEq(abi.encode(actualOwners[0]), abi.encode(passkeyOwner));
   }
 
   function test_deployCollision() public {
