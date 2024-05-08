@@ -48,13 +48,15 @@ contract WebauthnModularAccountFactoryTest is Test {
     deploy.run();
     plugin = deploy.plugin();
     factory = deploy.factory();
+    factory.unlockStake();
+    skip(entryPoint.getDepositInfo(address(factory)).unstakeDelaySec);
+    factory.withdrawStake(payable(0));
 
     owners.push(owner1);
     owners.push(owner2);
     for (uint160 i = 0; i < _MAX_OWNERS_ON_CREATION; i++) {
       largeOwners.push(address(i + 1));
     }
-    vm.deal(address(this), 100 ether);
   }
 
   function test_addressMatch() public {
@@ -143,11 +145,11 @@ contract WebauthnModularAccountFactoryTest is Test {
 
   function test_withdrawStake() public {
     test_unlockStake();
-    vm.warp(10 hours);
+    skip(10 hours - 1);
     vm.expectRevert("Stake withdrawal is not due");
     factory.withdrawStake(payable(address(this)));
     assertEq(address(this).balance, 90 ether);
-    vm.warp(10 hours + 1);
+    skip(1);
     factory.withdrawStake(payable(address(this)));
     assertEq(address(this).balance, 100 ether);
   }

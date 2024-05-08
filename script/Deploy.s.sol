@@ -16,7 +16,9 @@ contract DeployScript is Script {
   WebauthnModularAccountFactory public factory;
 
   function run() external {
-    vm.startBroadcast();
+    assert(msg.sender != DEFAULT_SENDER);
+
+    vm.startBroadcast(msg.sender);
 
     plugin = new WebauthnOwnerPlugin();
     factory = new WebauthnModularAccountFactory(
@@ -26,6 +28,7 @@ contract DeployScript is Script {
       keccak256(abi.encode(plugin.pluginManifest())),
       ENTRYPOINT
     );
+    factory.addStake{ value: 0.1 ether }(1 days, 0.1 ether);
 
     vm.stopBroadcast();
   }
