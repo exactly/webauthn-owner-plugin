@@ -2,13 +2,12 @@
 pragma solidity ^0.8.0;
 
 import { Ownable2Step, Ownable } from "openzeppelin-contracts/contracts/access/Ownable2Step.sol";
-import { ERC1967Proxy } from "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import { Create2 } from "openzeppelin-contracts/contracts/utils/Create2.sol";
 
 import { FactoryHelpers } from "modular-account/src/helpers/FactoryHelpers.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 import { IAccountInitializable } from "modular-account/src/interfaces/IAccountInitializable.sol";
 
+import { LibClone } from "solady/utils/LibClone.sol";
 import { SafeTransferLib } from "solady/utils/SafeTransferLib.sol";
 
 import { OwnersLib } from "./OwnersLib.sol";
@@ -25,6 +24,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   using SafeTransferLib for address;
   using FactoryHelpers for uint256;
   using OwnersLib for PublicKey;
+  using LibClone for address;
 
   IEntryPoint public immutable ENTRYPOINT;
   address public immutable WEBAUTHN_OWNER_PLUGIN;
@@ -58,27 +58,22 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   /// @dev The owner array must be in strictly ascending order and not include the 0 address.
   /// @param salt salt for create2
   /// @param owners address array of the owners
-  function createAccount(uint256 salt, PublicKey[] calldata owners) external returns (address addr) {
+  function createAccount(uint256 salt, PublicKey[] calldata owners) external returns (address accountAddress) {
     bytes[] memory pluginInitBytes = new bytes[](1);
     pluginInitBytes[0] = abi.encode(owners);
 
     bytes32 combinedSalt = salt.getCombinedSalt(pluginInitBytes[0]);
-    addr = Create2.computeAddress(
-      combinedSalt, keccak256(abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(IMPL, "")))
-    );
+    bool alreadyDeployed;
+    (alreadyDeployed, accountAddress) = IMPL.createDeterministicERC1967(combinedSalt);
 
-    // short circuit if exists
-    if (addr.code.length == 0) {
-      // not necessary to check return addr of this arg since next call fails if so
-      new ERC1967Proxy{ salt: combinedSalt }(IMPL, "");
-
+    if (!alreadyDeployed) {
       address[] memory plugins = new address[](1);
       plugins[0] = WEBAUTHN_OWNER_PLUGIN;
 
       bytes32[] memory manifestHashes = new bytes32[](1);
       manifestHashes[0] = _WEBAUTHN_OWNER_PLUGIN_MANIFEST_HASH;
 
-      IAccountInitializable(addr).initialize(plugins, abi.encode(manifestHashes, pluginInitBytes));
+      IAccountInitializable(accountAddress).initialize(plugins, abi.encode(manifestHashes, pluginInitBytes));
     }
   }
 
@@ -133,10 +128,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
       if (owners[i].x == 0 && owners[i].y == 0) revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
     }
 
-    return Create2.computeAddress(
-      salt.getCombinedSalt(abi.encode(owners)),
-      keccak256(abi.encodePacked(type(ERC1967Proxy).creationCode, abi.encode(IMPL, "")))
-    );
+    return IMPL.predictDeterministicAddressERC1967(salt.getCombinedSalt(abi.encode(owners)), address(this));
   }
 
   /// @notice Overriding to disable renounce ownership in Ownable
