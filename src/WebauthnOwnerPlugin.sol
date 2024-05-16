@@ -85,9 +85,9 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       ++ownerCount;
     }
     if (ownerCount > 64) revert OwnersLimitExceeded();
-    owners.length = ownerCount;
-
     if (ownerCount == 0) revert EmptyOwnersNotAllowed();
+
+    owners.length = ownerCount;
 
     emit OwnerUpdated(msg.sender, ownersToAdd, ownersToRemove);
   }
