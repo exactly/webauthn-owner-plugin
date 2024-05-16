@@ -231,35 +231,35 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[1] = ManifestAssociatedFunction({
-      executionSelector: IStandardExecutor.execute.selector,
+      executionSelector: this.updateOwnersPublicKeys.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[2] = ManifestAssociatedFunction({
-      executionSelector: IStandardExecutor.executeBatch.selector,
+      executionSelector: IStandardExecutor.execute.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[3] = ManifestAssociatedFunction({
-      executionSelector: UpgradeableModularAccount.installPlugin.selector,
+      executionSelector: IStandardExecutor.executeBatch.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[4] = ManifestAssociatedFunction({
-      executionSelector: UpgradeableModularAccount.uninstallPlugin.selector,
+      executionSelector: UpgradeableModularAccount.installPlugin.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[5] = ManifestAssociatedFunction({
-      executionSelector: UUPSUpgradeable.upgradeToAndCall.selector,
+      executionSelector: UpgradeableModularAccount.uninstallPlugin.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[6] = ManifestAssociatedFunction({
+      executionSelector: UUPSUpgradeable.upgradeToAndCall.selector,
+      associatedFunction: ownerOrSelfRuntimeValidationFunction
+    });
+    manifest.runtimeValidationFunctions[7] = ManifestAssociatedFunction({
       executionSelector: this.isValidSignature.selector,
       associatedFunction: alwaysAllowFunction
     });
-    manifest.runtimeValidationFunctions[7] = ManifestAssociatedFunction({
-      executionSelector: this.eip712Domain.selector,
-      associatedFunction: alwaysAllowFunction
-    });
     manifest.runtimeValidationFunctions[8] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwnersPublicKeys.selector,
+      executionSelector: this.eip712Domain.selector,
       associatedFunction: alwaysAllowFunction
     });
   }
