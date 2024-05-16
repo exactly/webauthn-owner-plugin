@@ -6,8 +6,8 @@ import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwner
 interface IWebauthnOwnerPlugin is IMultiOwnerPlugin {
   /// @notice This event is emitted when owners of the account are updated.
   /// @param account The account whose ownership changed.
-  /// @param addedOwners The address array of added owners.
-  /// @param removedOwners The address array of removed owners.
+  /// @param addedOwners The public key or address array of added owners.
+  /// @param removedOwners The public key or address array of removed owners.
   event OwnerUpdated(address indexed account, PublicKey[] addedOwners, PublicKey[] removedOwners);
 
   error InvalidEthereumAddressOwner(bytes32 owner);
