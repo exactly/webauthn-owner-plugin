@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { UpgradeableModularAccount, UUPSUpgradeable } from "modular-account/src/account/UpgradeableModularAccount.sol";
-import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
+
 import {
   ManifestAssociatedFunction,
   ManifestAssociatedFunctionType,
@@ -10,10 +10,11 @@ import {
   PluginManifest,
   PluginMetadata,
   SelectorPermission
-} from "modular-account/src/interfaces/IPlugin.sol";
-import { IStandardExecutor } from "modular-account/src/interfaces/IStandardExecutor.sol";
-import { SIG_VALIDATION_PASSED, SIG_VALIDATION_FAILED } from "modular-account/src/libraries/Constants.sol";
-import { BasePlugin } from "modular-account/src/plugins/BasePlugin.sol";
+} from "modular-account-libs/interfaces/IPlugin.sol";
+import { IStandardExecutor } from "modular-account-libs/interfaces/IStandardExecutor.sol";
+import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol";
+import { SIG_VALIDATION_PASSED, SIG_VALIDATION_FAILED } from "modular-account-libs/libraries/Constants.sol";
+import { BasePlugin } from "modular-account-libs/plugins/BasePlugin.sol";
 
 import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.sol";
 

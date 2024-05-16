@@ -5,9 +5,10 @@ import { Test } from "forge-std/Test.sol";
 
 import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
-import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
 import { Counter } from "modular-account/test/mocks/Counter.sol";
+
+import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol";
 
 import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.sol";
 

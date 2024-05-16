@@ -4,9 +4,12 @@
 [submodule "lib/modular-account"]
 	path = lib/modular-account
 	url = https://github.com/alchemyplatform/modular-account
-[submodule "lib/webauthn-sol"]
-	path = lib/webauthn-sol
-	url = https://github.com/base-org/webauthn-sol
+[submodule "lib/modular-account-libs"]
+	path = lib/modular-account-libs
+	url = https://github.com/erc6900/modular-account-libs
 [submodule "lib/solady"]
 	path = lib/solady
 	url = https://github.com/vectorized/solady
+[submodule "lib/webauthn-sol"]
+	path = lib/webauthn-sol
+	url = https://github.com/base-org/webauthn-sol

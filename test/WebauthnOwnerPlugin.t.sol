@@ -4,11 +4,12 @@ pragma solidity ^0.8.0;
 import { Test } from "forge-std/Test.sol";
 
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
-import { UserOperation } from "modular-account/src/interfaces/erc4337/UserOperation.sol";
-import { PluginManifest } from "modular-account/src/interfaces/IPlugin.sol";
 import { BasePlugin } from "modular-account/src/plugins/BasePlugin.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
 import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
+
+import { PluginManifest } from "modular-account-libs/interfaces/IPlugin.sol";
+import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol";
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
