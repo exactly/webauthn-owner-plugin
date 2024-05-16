@@ -130,7 +130,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     if (owners.length > _MAX_OWNERS_ON_CREATION) revert OwnersLimitExceeded();
 
     for (uint256 i = 0; i < owners.length; ++i) {
-      if (owners[i].x == 0 && owners[i].x == 0) revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
+      if (owners[i].x == 0 && owners[i].y == 0) revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
     }
 
     return Create2.computeAddress(
