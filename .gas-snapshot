@@ -1,7 +1,7 @@
 MultiOwnerPluginIntegration:test_ownerPlugin_successInstallation() (gas: 39146)
 MultiOwnerPluginIntegration:test_runtimeValidation_alwaysAllow_isValidSignature() (gas: 105507)
 MultiOwnerPluginIntegration:test_runtimeValidation_ownerOrSelf_standardExecute() (gas: 142842)
-MultiOwnerPluginIntegration:test_userOpValidation_owner_standardExecute() (gas: 344921)
+MultiOwnerPluginIntegration:test_userOpValidation_owner_standardExecute() (gas: 344933)
 MultiOwnerPluginTest:testFuzz_isValidSignature_ContractOwner(bytes32) (runs: 256, μ: 110808, ~: 110808)
 MultiOwnerPluginTest:testFuzz_isValidSignature_ContractOwnerWithEOAOwner(bytes32) (runs: 256, μ: 121107, ~: 121107)
 MultiOwnerPluginTest:testFuzz_isValidSignature_EOAOwner(string,bytes32) (runs: 256, μ: 132150, ~: 132143)

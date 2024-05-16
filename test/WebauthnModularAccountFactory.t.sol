@@ -44,7 +44,7 @@ contract WebauthnModularAccountFactoryTest is Test {
   function setUp() public {
     DeployScript deploy = new DeployScript();
     entryPoint = EntryPoint(payable(address(deploy.ENTRYPOINT())));
-    vm.etch(address(entryPoint), vm.getDeployedCode("EntryPoint.sol:EntryPoint"));
+    vm.etch(address(entryPoint), address(new EntryPoint()).code);
     deploy.run();
     plugin = deploy.plugin();
     factory = deploy.factory();

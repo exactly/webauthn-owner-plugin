@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import { Test } from "forge-std/Test.sol";
 
+import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
+
 import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
@@ -52,7 +54,7 @@ contract MultiOwnerPluginIntegration is Test {
   function setUp() external {
     DeployScript deploy = new DeployScript();
     entryPoint = deploy.ENTRYPOINT();
-    vm.etch(address(entryPoint), vm.getDeployedCode("EntryPoint.sol:EntryPoint"));
+    vm.etch(address(entryPoint), address(new EntryPoint()).code);
     deploy.run();
     plugin = deploy.plugin();
     factory = deploy.factory();
