@@ -12,8 +12,8 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { OwnersLib } from "../src/OwnersLib.sol";
 import { DeployScript } from "../script/Deploy.s.sol";
-import { WebauthnModularAccountFactory, OwnersLimitExceeded } from "../src/WebauthnModularAccountFactory.sol";
-import { WebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey } from "../src/WebauthnOwnerPlugin.sol";
+import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
+import { WebauthnOwnerPlugin, IWebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey } from "../src/WebauthnOwnerPlugin.sol";
 
 // solhint-disable func-name-mixedcase
 contract WebauthnModularAccountFactoryTest is Test {
@@ -41,7 +41,7 @@ contract WebauthnModularAccountFactoryTest is Test {
   bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
   uint256 internal constant _MAX_OWNERS_ON_CREATION = 64;
 
-  function setUp() public {
+  function setUp() external {
     DeployScript deploy = new DeployScript();
     entryPoint = EntryPoint(payable(address(deploy.ENTRYPOINT())));
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
@@ -59,13 +59,13 @@ contract WebauthnModularAccountFactoryTest is Test {
     }
   }
 
-  function test_addressMatch() public {
+  function test_addressMatch() external {
     address predicted = factory.getAddress(0, owners.toPublicKeys());
     address deployed = factory.createAccount(0, owners.toPublicKeys());
     assertEq(predicted, deployed);
   }
 
-  function test_deploy() public {
+  function test_deploy() external {
     address deployed = factory.createAccount(0, owners.toPublicKeys());
 
     // test that the deployed account is initialized
@@ -78,7 +78,7 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(actualOwners[1], owner2);
   }
 
-  function test_deploy_PasskeyOwner() public {
+  function test_deploy_PasskeyOwner() external {
     PublicKey[] memory ownerKeys = new PublicKey[](1);
     ownerKeys[0] = passkeyOwner;
     address deployed = factory.createAccount(0, ownerKeys);
@@ -92,7 +92,7 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(abi.encode(actualOwners[0]), abi.encode(passkeyOwner));
   }
 
-  function test_deployCollision() public {
+  function test_deployCollision() external {
     address deployed = factory.createAccount(0, owners.toPublicKeys());
 
     uint256 gasStart = gasleft();
@@ -105,7 +105,7 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(deployed, secondDeploy);
   }
 
-  function test_deployedAccountHasCorrectPlugins() public {
+  function test_deployedAccountHasCorrectPlugins() external {
     address deployed = factory.createAccount(0, owners.toPublicKeys());
 
     // check installed plugins on account
@@ -114,7 +114,7 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(plugins[0], address(plugin));
   }
 
-  function test_badOwnersArray() public {
+  function test_badOwnersArray() external {
     vm.expectRevert(IMultiOwnerPlugin.EmptyOwnersNotAllowed.selector);
     factory.getAddress(0, new PublicKey[](0));
 
@@ -143,7 +143,7 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(entryPoint.getDepositInfo(address(factory)).withdrawTime, block.timestamp + 10 hours);
   }
 
-  function test_withdrawStake() public {
+  function test_withdrawStake() external {
     test_unlockStake();
     skip(10 hours - 1);
     vm.expectRevert("Stake withdrawal is not due");
@@ -154,14 +154,14 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(address(this).balance, 100 ether);
   }
 
-  function test_withdraw() public {
+  function test_withdraw() external {
     factory.addStake{ value: 10 ether }(10 hours, 1 ether);
     assertEq(address(factory).balance, 9 ether);
     factory.withdraw(payable(address(this)), address(0), 0); // amount = balance if native currency
     assertEq(address(factory).balance, 0);
   }
 
-  function test_2StepOwnershipTransfer() public {
+  function test_2StepOwnershipTransfer() external {
     assertEq(factory.owner(), address(this));
     factory.transferOwnership(owner1);
     assertEq(factory.owner(), address(this));
@@ -170,18 +170,26 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(factory.owner(), owner1);
   }
 
-  function test_getAddressWithMaxOwnersAndDeploy() public {
+  function test_getAddressWithMaxOwnersAndDeploy() external {
     address addr = factory.getAddress(0, largeOwners.toPublicKeys());
     assertEq(addr, factory.createAccount(0, largeOwners.toPublicKeys()));
   }
 
-  function test_getAddressWithTooManyOwners() public {
+  function test_getAddressWithTooManyOwners() external {
     largeOwners.push(address(101));
-    vm.expectRevert(OwnersLimitExceeded.selector);
+    vm.expectRevert(IWebauthnOwnerPlugin.OwnersLimitExceeded.selector);
     factory.getAddress(0, largeOwners.toPublicKeys());
   }
 
-  function test_deployWithDuplicateOwners() public {
+  function test_getAddressWithUnsortedOwners() external {
+    address[] memory tempOwners = new address[](2);
+    tempOwners[0] = address(2);
+    tempOwners[1] = address(1);
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(1)));
+    factory.getAddress(0, tempOwners.toPublicKeys());
+  }
+
+  function test_deployWithDuplicateOwners() external {
     address[] memory tempOwners = new address[](2);
     tempOwners[0] = address(1);
     tempOwners[1] = address(1);
@@ -196,10 +204,17 @@ contract WebauthnModularAccountFactoryTest is Test {
     factory.createAccount(0, tempOwners.toPublicKeys());
   }
 
-  function test_deployWithUnsortedOwners() public {
+  function test_deployWithUnsortedOwners() external {
     address[] memory tempOwners = new address[](2);
     tempOwners[0] = address(2);
     tempOwners[1] = address(1);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        PluginManagerInternals.PluginInstallCallbackFailed.selector,
+        plugin,
+        abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(1))
+      )
+    );
     factory.createAccount(0, tempOwners.toPublicKeys());
   }
 

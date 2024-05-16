@@ -11,7 +11,7 @@ import { LibClone } from "solady/utils/LibClone.sol";
 import { SafeTransferLib } from "solady/utils/SafeTransferLib.sol";
 
 import { OwnersLib } from "./OwnersLib.sol";
-import { IMultiOwnerPlugin, PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { IWebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 
 /// @title Webauthn Owner Plugin Modular Account Factory
 /// @author Exactly
@@ -24,6 +24,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   using SafeTransferLib for address;
   using FactoryHelpers for uint256;
   using OwnersLib for PublicKey[64];
+  using OwnersLib for PublicKey[];
   using OwnersLib for PublicKey;
   using LibClone for address;
 
@@ -121,16 +122,13 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     // Array can't be empty.
     if (owners.length == 0) revert IMultiOwnerPlugin.EmptyOwnersNotAllowed();
 
-    if (owners.length > _MAX_OWNERS) revert OwnersLimitExceeded();
+    if (owners.length > _MAX_OWNERS) revert IWebauthnOwnerPlugin.OwnersLimitExceeded();
 
-    uint256 ownerCount = 0;
-    PublicKey[64] memory keys;
+    address previousOwnerAddress;
     for (uint256 i = 0; i < owners.length; ++i) {
-      if ((owners[i].x == 0 && owners[i].y == 0) || keys.contains(owners[i], ownerCount)) {
-        revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
-      }
-      keys[ownerCount] = owners[i];
-      ++ownerCount;
+      address ownerAddress = owners[i].toAddress();
+      if (ownerAddress <= previousOwnerAddress) revert IMultiOwnerPlugin.InvalidOwner(ownerAddress);
+      previousOwnerAddress = ownerAddress;
     }
 
     return IMPL.predictDeterministicAddressERC1967(salt.getCombinedSalt(abi.encode(owners)), address(this));
@@ -143,4 +141,3 @@ contract WebauthnModularAccountFactory is Ownable2Step {
 }
 
 error InvalidAction();
-error OwnersLimitExceeded();

@@ -68,8 +68,8 @@ contract MultiOwnerPluginIntegration is Test {
 
     // setup account with WebauthnModularAccountFactory
     owners = new address[](2);
-    owners[0] = owner1;
-    owners[1] = owner2;
+    owners[0] = owner1 > owner2 ? owner2 : owner1;
+    owners[1] = owner2 > owner1 ? owner2 : owner1;
     account = UpgradeableModularAccount(payable(factory.getAddress(0, owners.toPublicKeys())));
     vm.label(address(account), "account");
     vm.deal(address(account), 100 ether);

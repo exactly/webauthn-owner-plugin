@@ -124,15 +124,16 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     if (initialOwners.length > 64) revert OwnersLimitExceeded();
 
     uint256 ownerCount = 0;
+    address previousOwnerAddress;
     PublicKey[64] memory keys;
     Owners storage owners = _owners[msg.sender];
     for (uint256 i = 0; i < initialOwners.length; ++i) {
-      if ((initialOwners[i].x == 0 && initialOwners[i].y == 0) || keys.contains(initialOwners[i], ownerCount)) {
-        revert InvalidOwner(initialOwners[i].toAddress());
-      }
+      address ownerAddress = initialOwners[i].toAddress();
+      if (ownerAddress <= previousOwnerAddress) revert InvalidOwner(ownerAddress);
       keys[ownerCount] = initialOwners[i];
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
+      previousOwnerAddress = ownerAddress;
     }
     owners.length = ownerCount;
 
