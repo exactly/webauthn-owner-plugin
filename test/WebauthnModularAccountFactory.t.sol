@@ -123,11 +123,11 @@ contract WebauthnModularAccountFactoryTest is Test {
     vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(0)));
     factory.getAddress(0, badOwners.toPublicKeys());
 
-    // badOwners[0] = address(1);
-    // badOwners[1] = address(1);
+    badOwners[0] = address(1);
+    badOwners[1] = address(1);
 
-    // vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(1)));
-    // factory.getAddress(0, badOwners.toPublicKeys());
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(1)));
+    factory.getAddress(0, badOwners.toPublicKeys());
   }
 
   function test_addStake() public {

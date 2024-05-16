@@ -23,6 +23,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   using SafeTransferLib for address payable;
   using SafeTransferLib for address;
   using FactoryHelpers for uint256;
+  using OwnersLib for PublicKey[64];
   using OwnersLib for PublicKey;
   using LibClone for address;
 
@@ -30,7 +31,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   address public immutable WEBAUTHN_OWNER_PLUGIN;
   address public immutable IMPL;
   bytes32 internal immutable _WEBAUTHN_OWNER_PLUGIN_MANIFEST_HASH;
-  uint256 internal constant _MAX_OWNERS_ON_CREATION = 64;
+  uint256 internal constant _MAX_OWNERS = 64;
 
   /// @notice Constructor for the factory
   constructor(
@@ -120,12 +121,16 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     // Array can't be empty.
     if (owners.length == 0) revert IMultiOwnerPlugin.EmptyOwnersNotAllowed();
 
-    // This protects against counterfactuals being generated against an exceptionally large number of owners
-    // that may exceed the block gas limit when actually creating the account.
-    if (owners.length > _MAX_OWNERS_ON_CREATION) revert OwnersLimitExceeded();
+    if (owners.length > _MAX_OWNERS) revert OwnersLimitExceeded();
 
+    uint256 ownerCount = 0;
+    PublicKey[64] memory keys;
     for (uint256 i = 0; i < owners.length; ++i) {
-      if (owners[i].x == 0 && owners[i].y == 0) revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
+      if ((owners[i].x == 0 && owners[i].y == 0) || keys.contains(owners[i], ownerCount)) {
+        revert IMultiOwnerPlugin.InvalidOwner(owners[i].toAddress());
+      }
+      keys[ownerCount] = owners[i];
+      ++ownerCount;
     }
 
     return IMPL.predictDeterministicAddressERC1967(salt.getCombinedSalt(abi.encode(owners)), address(this));
