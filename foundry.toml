@@ -8,6 +8,7 @@ isolate = true
 
 [fmt]
 tab_width = 2
+sort_imports = true
 bracket_spacing = true
 number_underscore = "thousands"
 

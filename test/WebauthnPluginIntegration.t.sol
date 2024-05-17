@@ -19,7 +19,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
 import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
-import { WebauthnOwnerPlugin, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
+import { SignatureWrapper, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 

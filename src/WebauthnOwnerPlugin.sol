@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.18;
 
-import { UpgradeableModularAccount, UUPSUpgradeable } from "modular-account/src/account/UpgradeableModularAccount.sol";
+import { UUPSUpgradeable, UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 
 import {
   ManifestAssociatedFunction,
@@ -13,7 +13,7 @@ import {
 } from "modular-account-libs/interfaces/IPlugin.sol";
 import { IStandardExecutor } from "modular-account-libs/interfaces/IStandardExecutor.sol";
 import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol";
-import { SIG_VALIDATION_PASSED, SIG_VALIDATION_FAILED } from "modular-account-libs/libraries/Constants.sol";
+import { SIG_VALIDATION_FAILED, SIG_VALIDATION_PASSED } from "modular-account-libs/libraries/Constants.sol";
 import { BasePlugin } from "modular-account-libs/plugins/BasePlugin.sol";
 
 import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.sol";
@@ -23,8 +23,8 @@ import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
-import { OwnersLib, Owners } from "./OwnersLib.sol";
-import { IWebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey, SignatureWrapper } from "./IWebauthnOwnerPlugin.sol";
+import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "./IWebauthnOwnerPlugin.sol";
+import { Owners, OwnersLib } from "./OwnersLib.sol";
 
 contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   using SignatureCheckerLib for address;

@@ -15,12 +15,12 @@ import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
+import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
-import { WebauthnOwnerPlugin, IWebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
+import { IWebauthnOwnerPlugin, PublicKey, SignatureWrapper, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 

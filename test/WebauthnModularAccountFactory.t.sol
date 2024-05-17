@@ -10,10 +10,10 @@ import { UpgradeableModularAccount } from "modular-account/src/account/Upgradeab
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { OwnersLib } from "../src/OwnersLib.sol";
 import { DeployScript } from "../script/Deploy.s.sol";
+import { OwnersLib } from "../src/OwnersLib.sol";
 import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
-import { WebauthnOwnerPlugin, IWebauthnOwnerPlugin, IMultiOwnerPlugin, PublicKey } from "../src/WebauthnOwnerPlugin.sol";
+import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 // solhint-disable func-name-mixedcase
 contract WebauthnModularAccountFactoryTest is Test {
