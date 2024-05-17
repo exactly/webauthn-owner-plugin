@@ -137,14 +137,16 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     }
     owners.length = ownerCount;
 
+    emit OwnerUpdated(msg.sender, initialOwners, new PublicKey[](0));
     emit OwnerUpdated(msg.sender, initialOwners.toAddresses(), new address[](0));
   }
 
   /// @inheritdoc BasePlugin
   function onUninstall(bytes calldata) external override {
-    address[] memory owners = _owners[msg.sender].allAddresses();
+    PublicKey[] memory owners = _owners[msg.sender].all();
     _owners[msg.sender].length = 0;
-    emit OwnerUpdated(msg.sender, new address[](0), owners);
+    emit OwnerUpdated(msg.sender, new PublicKey[](0), owners);
+    emit OwnerUpdated(msg.sender, new address[](0), owners.toAddresses());
   }
 
   /// @inheritdoc BasePlugin

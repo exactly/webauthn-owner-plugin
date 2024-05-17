@@ -20,7 +20,7 @@ import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
-import { WebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
+import { WebauthnOwnerPlugin, IWebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 
@@ -49,9 +49,6 @@ contract MultiOwnerPluginTest is Test {
   uint256 public passkeyOwnerKey;
   address[] public ownerArray;
 
-  // Re-declare events for vm.expectEmit
-  event OwnerUpdated(address indexed account, address[] addedOwners, address[] removedOwners);
-
   function setUp() external {
     DeployScript deploy = new DeployScript();
     entryPoint = deploy.ENTRYPOINT();
@@ -79,7 +76,9 @@ contract MultiOwnerPluginTest is Test {
     ownerArray[2] = owner1;
 
     vm.expectEmit(true, true, true, true);
-    emit OwnerUpdated(accountA, ownerArray, new address[](0));
+    emit IWebauthnOwnerPlugin.OwnerUpdated(accountA, ownerArray.toPublicKeys(), new PublicKey[](0));
+    vm.expectEmit(true, true, true, true);
+    emit IMultiOwnerPlugin.OwnerUpdated(accountA, ownerArray, new address[](0));
     vm.startPrank(accountA);
     plugin.onInstall(abi.encode(ownerArray.toPublicKeys()));
   }
@@ -95,10 +94,10 @@ contract MultiOwnerPluginTest is Test {
   }
 
   function test_onUninstall_success() external {
-    // Populate the expected event using `plugin.ownersOf` instead of `ownerArray` to reverse the order of
-    // owners.
     vm.expectEmit(true, true, true, true);
-    emit OwnerUpdated(accountA, new address[](0), plugin.ownersOf(accountA));
+    emit IWebauthnOwnerPlugin.OwnerUpdated(accountA, new PublicKey[](0), plugin.ownersPublicKeysOf(accountA));
+    vm.expectEmit(true, true, true, true);
+    emit IMultiOwnerPlugin.OwnerUpdated(accountA, new address[](0), plugin.ownersOf(accountA));
 
     plugin.onUninstall(abi.encode(""));
     address[] memory returnedOwners = plugin.ownersOf(accountA);
@@ -170,7 +169,9 @@ contract MultiOwnerPluginTest is Test {
     ownersToRemove[1] = owner2;
 
     vm.expectEmit(true, true, true, true);
-    emit OwnerUpdated(accountA, new address[](0), ownersToRemove);
+    emit IWebauthnOwnerPlugin.OwnerUpdated(accountA, new PublicKey[](0), ownersToRemove.toPublicKeys());
+    vm.expectEmit(true, true, true, true);
+    emit IMultiOwnerPlugin.OwnerUpdated(accountA, new address[](0), ownersToRemove);
 
     plugin.updateOwners(new address[](0), ownersToRemove);
 
