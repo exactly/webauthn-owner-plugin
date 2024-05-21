@@ -55,6 +55,7 @@ contract MultiOwnerPluginIntegration is Test {
     DeployScript deploy = new DeployScript();
     entryPoint = deploy.ENTRYPOINT();
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
+    vm.etch(deploy.ACCOUNT_IMPL(), address(new UpgradeableModularAccount(entryPoint)).code);
     deploy.run();
     plugin = deploy.plugin();
     factory = deploy.factory();

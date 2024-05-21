@@ -5,6 +5,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
+import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 import { BasePlugin } from "modular-account/src/plugins/BasePlugin.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
@@ -53,6 +54,7 @@ contract MultiOwnerPluginTest is Test {
     DeployScript deploy = new DeployScript();
     entryPoint = deploy.ENTRYPOINT();
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
+    vm.etch(deploy.ACCOUNT_IMPL(), address(new UpgradeableModularAccount(entryPoint)).code);
     deploy.run();
     plugin = deploy.plugin();
 
