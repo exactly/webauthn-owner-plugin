@@ -23,7 +23,7 @@ import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
-import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey, SignatureWrapper } from "./IWebauthnOwnerPlugin.sol";
+import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 import { Owners, OwnersLib } from "./OwnersLib.sol";
 
 contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
@@ -304,7 +304,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     owners = _owners[account].all();
   }
 
-  function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint256 index) {
+  function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint8 index) {
     Owners storage owners = _owners[account];
     uint256 ownerCount = owners.length;
     for (index = 0; index < ownerCount; ++index) {
@@ -330,18 +330,17 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
 
   /// @dev Webauthn public keys with `y` as 0 are not supported, as they will be treated as Ethereum addresses.
   function _validateSignature(address account, bytes32 message, bytes calldata signature) internal view returns (bool) {
-    SignatureWrapper memory sigWrapper = abi.decode(signature, (SignatureWrapper));
-    PublicKey memory owner = _owners[account].get(sigWrapper.ownerIndex);
+    PublicKey memory owner = _owners[account].get(uint8(signature[0]));
 
     if (owner.y == 0) {
       if (owner.x > type(uint160).max) revert InvalidEthereumAddressOwner(bytes32(owner.x));
-      return address(uint160(owner.x)).isValidSignatureNow(message, sigWrapper.signatureData);
+      return address(uint160(owner.x)).isValidSignatureNow(message, signature[1:]);
     }
 
     return WebAuthn.verify({
       challenge: abi.encode(message),
       requireUV: false,
-      webAuthnAuth: abi.decode(sigWrapper.signatureData, (WebAuthn.WebAuthnAuth)),
+      webAuthnAuth: abi.decode(signature[1:], (WebAuthn.WebAuthnAuth)),
       x: owner.x,
       y: owner.y
     });

@@ -14,15 +14,10 @@ interface IWebauthnOwnerPlugin is IMultiOwnerPlugin {
   error OwnersLimitExceeded();
 
   function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners);
-  function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint256 index);
+  function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint8 index);
 }
 
 struct PublicKey {
   uint256 x;
   uint256 y;
-}
-
-struct SignatureWrapper {
-  uint256 ownerIndex;
-  bytes signatureData;
 }
