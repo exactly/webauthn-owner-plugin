@@ -3,6 +3,7 @@
   "scripts": {
     "test": "concurrently 'npm:test:*' --group -c auto",
     "test:fmt": "forge fmt --check",
+    "test:sizes": "forge build --sizes --skip test",
     "test:forge": "forge snapshot --check",
     "test:solhint": "solhint '{src,script,test}/**/*.sol' --max-warnings=0",
     "test:slither": "slither .",
