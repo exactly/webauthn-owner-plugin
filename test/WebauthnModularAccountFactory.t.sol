@@ -13,7 +13,13 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
 import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
-import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
+import {
+  IMultiOwnerPlugin,
+  IWebauthnOwnerPlugin,
+  MAX_OWNERS,
+  PublicKey,
+  WebauthnOwnerPlugin
+} from "../src/WebauthnOwnerPlugin.sol";
 
 // solhint-disable func-name-mixedcase
 contract WebauthnModularAccountFactoryTest is Test {
@@ -39,7 +45,6 @@ contract WebauthnModularAccountFactoryTest is Test {
   uint256 public passkeyOwnerKey = uint256(0x03d99692017473e2d631945a812607b23269d85721e0f370b8d3e7d29a874fd2);
 
   bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
-  uint256 internal constant _MAX_OWNERS_ON_CREATION = 64;
 
   function setUp() external {
     DeployScript deploy = new DeployScript();
@@ -54,7 +59,7 @@ contract WebauthnModularAccountFactoryTest is Test {
 
     owners.push(owner1);
     owners.push(owner2);
-    for (uint160 i = 0; i < _MAX_OWNERS_ON_CREATION; i++) {
+    for (uint160 i = 0; i < MAX_OWNERS; i++) {
       largeOwners.push(address(i + 1));
     }
   }

@@ -10,7 +10,7 @@ import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.
 import { LibClone } from "solady/utils/LibClone.sol";
 import { SafeTransferLib } from "solady/utils/SafeTransferLib.sol";
 
-import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 import { OwnersLib } from "./OwnersLib.sol";
 
 /// @title Webauthn Owner Plugin Modular Account Factory
@@ -23,7 +23,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   using SafeTransferLib for address payable;
   using SafeTransferLib for address;
   using FactoryHelpers for uint256;
-  using OwnersLib for PublicKey[64];
+  using OwnersLib for PublicKey[MAX_OWNERS];
   using OwnersLib for PublicKey[];
   using OwnersLib for PublicKey;
   using LibClone for address;
@@ -32,7 +32,6 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   address public immutable WEBAUTHN_OWNER_PLUGIN;
   address public immutable IMPL;
   bytes32 internal immutable _WEBAUTHN_OWNER_PLUGIN_MANIFEST_HASH;
-  uint256 internal constant _MAX_OWNERS = 64;
 
   /// @notice Constructor for the factory
   constructor(
@@ -122,7 +121,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     // Array can't be empty.
     if (owners.length == 0) revert IMultiOwnerPlugin.EmptyOwnersNotAllowed();
 
-    if (owners.length > _MAX_OWNERS) revert IWebauthnOwnerPlugin.OwnersLimitExceeded();
+    if (owners.length > MAX_OWNERS) revert IWebauthnOwnerPlugin.OwnersLimitExceeded();
 
     address previousOwnerAddress;
     for (uint256 i = 0; i < owners.length; ++i) {

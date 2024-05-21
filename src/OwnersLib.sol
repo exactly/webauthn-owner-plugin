@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 
 library OwnersLib {
   function get(Owners storage owners, uint256 index) internal view returns (PublicKey memory) {
@@ -25,7 +25,7 @@ library OwnersLib {
     }
   }
 
-  function all64(Owners storage owners) internal view returns (uint256 length, PublicKey[64] memory publicKeys) {
+  function all64(Owners storage owners) internal view returns (uint256 length, PublicKey[MAX_OWNERS] memory publicKeys) {
     length = owners.length;
     for (uint256 i = 0; i < length; ++i) {
       publicKeys[i] = owners.publicKeys[i];
@@ -41,14 +41,22 @@ library OwnersLib {
     return false;
   }
 
-  function contains(PublicKey[64] memory keys, PublicKey memory owner, uint256 length) internal pure returns (bool) {
+  function contains(PublicKey[MAX_OWNERS] memory keys, PublicKey memory owner, uint256 length)
+    internal
+    pure
+    returns (bool)
+  {
     for (uint256 i = 0; i < length; ++i) {
       if (keys[i].x == owner.x && keys[i].y == owner.y) return true;
     }
     return false;
   }
 
-  function find(PublicKey[64] memory keys, PublicKey memory owner, uint256 length) internal pure returns (uint256) {
+  function find(PublicKey[MAX_OWNERS] memory keys, PublicKey memory owner, uint256 length)
+    internal
+    pure
+    returns (uint256)
+  {
     for (uint256 i = 0; i < length; ++i) {
       if (keys[i].x == owner.x && keys[i].y == owner.y) return i;
     }
@@ -80,7 +88,7 @@ library OwnersLib {
 
 struct Owners {
   uint256 length;
-  PublicKey[64] publicKeys;
+  PublicKey[MAX_OWNERS] publicKeys;
 }
 
 error IndexOutOfBounds();

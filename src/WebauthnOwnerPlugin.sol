@@ -23,12 +23,12 @@ import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
-import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 import { Owners, OwnersLib } from "./OwnersLib.sol";
 
 contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   using SignatureCheckerLib for address;
-  using OwnersLib for PublicKey[64];
+  using OwnersLib for PublicKey[MAX_OWNERS];
   using OwnersLib for PublicKey[];
   using OwnersLib for PublicKey;
   using OwnersLib for address[];
@@ -64,7 +64,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     isInitialized(msg.sender)
   {
     Owners storage owners = _owners[msg.sender];
-    (uint256 ownerCount, PublicKey[64] memory keys) = owners.all64();
+    (uint256 ownerCount, PublicKey[MAX_OWNERS] memory keys) = owners.all64();
     uint256 addIndex = 0;
     for (uint256 removeIndex = 0; removeIndex < ownersToRemove.length; ++removeIndex) {
       uint256 ownerIndex = keys.find(ownersToRemove[removeIndex], ownerCount);
@@ -84,7 +84,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
     }
-    if (ownerCount > 64) revert OwnersLimitExceeded();
+    if (ownerCount > MAX_OWNERS) revert OwnersLimitExceeded();
     if (ownerCount == 0) revert EmptyOwnersNotAllowed();
 
     owners.length = ownerCount;
@@ -121,11 +121,11 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
     (PublicKey[] memory initialOwners) = abi.decode(data, (PublicKey[]));
     if (initialOwners.length == 0) revert EmptyOwnersNotAllowed();
-    if (initialOwners.length > 64) revert OwnersLimitExceeded();
+    if (initialOwners.length > MAX_OWNERS) revert OwnersLimitExceeded();
 
     uint256 ownerCount = 0;
     address previousOwnerAddress;
-    PublicKey[64] memory keys;
+    PublicKey[MAX_OWNERS] memory keys;
     Owners storage owners = _owners[msg.sender];
     for (uint256 i = 0; i < initialOwners.length; ++i) {
       address ownerAddress = initialOwners[i].toAddress();
