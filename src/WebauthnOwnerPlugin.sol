@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.18;
 
-import { UUPSUpgradeable, UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
-
 import {
   ManifestAssociatedFunction,
   ManifestAssociatedFunctionType,
@@ -11,6 +9,7 @@ import {
   PluginMetadata,
   SelectorPermission
 } from "modular-account-libs/interfaces/IPlugin.sol";
+import { IPluginManager } from "modular-account-libs/interfaces/IPluginManager.sol";
 import { IStandardExecutor } from "modular-account-libs/interfaces/IStandardExecutor.sol";
 import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol";
 import { SIG_VALIDATION_FAILED, SIG_VALIDATION_PASSED } from "modular-account-libs/libraries/Constants.sol";
@@ -20,6 +19,7 @@ import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.s
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
+import { UUPSUpgradeable } from "solady/utils/UUPSUpgradeable.sol";
 
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
@@ -201,11 +201,11 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[3] = ManifestAssociatedFunction({
-      executionSelector: UpgradeableModularAccount.installPlugin.selector,
+      executionSelector: IPluginManager.installPlugin.selector,
       associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[4] = ManifestAssociatedFunction({
-      executionSelector: UpgradeableModularAccount.uninstallPlugin.selector,
+      executionSelector: IPluginManager.uninstallPlugin.selector,
       associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[5] = ManifestAssociatedFunction({
@@ -246,11 +246,11 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[4] = ManifestAssociatedFunction({
-      executionSelector: UpgradeableModularAccount.installPlugin.selector,
+      executionSelector: IPluginManager.installPlugin.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[5] = ManifestAssociatedFunction({
-      executionSelector: UpgradeableModularAccount.uninstallPlugin.selector,
+      executionSelector: IPluginManager.uninstallPlugin.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[6] = ManifestAssociatedFunction({
