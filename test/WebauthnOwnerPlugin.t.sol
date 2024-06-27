@@ -27,6 +27,7 @@ import { TestLib } from "./utils/TestLib.sol";
 
 // solhint-disable func-name-mixedcase
 contract MultiOwnerPluginTest is Test {
+  using OwnersLib for PublicKey;
   using OwnersLib for address[];
   using TestLib for address;
   using Utils for uint256;
@@ -118,6 +119,16 @@ contract MultiOwnerPluginTest is Test {
     vm.stopPrank();
   }
 
+  function test_onInstall_failWithInvalidAddress() external {
+    PublicKey[] memory owners = new PublicKey[](1);
+    owners[0] = PublicKey(type(uint168).max, 0);
+
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, owners[0].toAddress()));
+    vm.startPrank(address(contractOwner));
+    plugin.onInstall(abi.encode(owners));
+    vm.stopPrank();
+  }
+
   function test_eip712Domain() external view {
     assertEq(true, plugin.isOwnerOf(accountA, owner2));
     assertEq(false, plugin.isOwnerOf(accountA, address(contractOwner)));
@@ -188,6 +199,14 @@ contract MultiOwnerPluginTest is Test {
 
     vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.OwnerDoesNotExist.selector, address(contractOwner)));
     plugin.updateOwners(new address[](0), ownersToRemove);
+  }
+
+  function test_updateOwnersPublicKeys_failWithInvalidAddress() external {
+    PublicKey[] memory ownersToAdd = new PublicKey[](1);
+    ownersToAdd[0] = PublicKey(type(uint168).max, 0);
+
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, ownersToAdd[0].toAddress()));
+    plugin.updateOwnersPublicKeys(ownersToAdd, new PublicKey[](0));
   }
 
   function testFuzz_isValidSignature_EOAOwner(string memory salt, bytes32 digest) external {

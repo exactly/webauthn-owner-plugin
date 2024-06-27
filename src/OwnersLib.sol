@@ -81,6 +81,11 @@ library OwnersLib {
     }
   }
 
+  /// @dev Negated semantics for gas savings.
+  function isInvalid(PublicKey memory owner) internal pure returns (bool) {
+    return owner.y == 0 && (owner.x == 0 || owner.x > type(uint160).max);
+  }
+
   function equals(PublicKey memory a, PublicKey memory b) internal pure returns (bool) {
     return a.x == b.x && a.y == b.y;
   }
