@@ -5,6 +5,7 @@ optimizer = true
 optimizer_runs = 999_999
 verbosity = 3
 isolate = true
+fs_permissions = [{ access = "read", path = "./broadcast" }]
 
 [fmt]
 tab_width = 2
