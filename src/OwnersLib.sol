@@ -10,15 +10,17 @@ library OwnersLib {
   }
 
   function all(Owners storage owners) internal view returns (PublicKey[] memory publicKeys) {
-    publicKeys = new PublicKey[](owners.length);
-    for (uint256 i = 0; i < publicKeys.length; ++i) {
+    uint256 length = owners.length;
+    publicKeys = new PublicKey[](length);
+    for (uint256 i = 0; i < length; ++i) {
       publicKeys[i] = owners.publicKeys[i];
     }
   }
 
   function allAddresses(Owners storage owners) internal view returns (address[] memory addresses) {
-    addresses = new address[](owners.length);
-    for (uint256 i = 0; i < addresses.length; ++i) {
+    uint256 length = owners.length;
+    addresses = new address[](length);
+    for (uint256 i = 0; i < length; ++i) {
       addresses[i] = owners.publicKeys[i].y == 0
         ? address(uint160(uint256(owners.publicKeys[i].x)))
         : address(bytes20(keccak256(abi.encode(owners.publicKeys[i]))));
