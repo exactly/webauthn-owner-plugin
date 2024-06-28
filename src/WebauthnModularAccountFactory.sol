@@ -62,22 +62,12 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   /// @param salt salt for create2
   /// @param owners address array of the owners
   function createAccount(uint256 salt, PublicKey[] calldata owners) external returns (address accountAddress) {
-    bytes[] memory pluginInitBytes = new bytes[](1);
-    pluginInitBytes[0] = abi.encode(owners);
-
-    bytes32 combinedSalt = salt.getCombinedSalt(pluginInitBytes[0]);
+    bytes memory ownerBytes = abi.encode(owners);
+    bytes32 combinedSalt = salt.getCombinedSalt(ownerBytes);
     bool alreadyDeployed;
     (alreadyDeployed, accountAddress) = IMPL.createDeterministicERC1967(combinedSalt);
 
-    if (!alreadyDeployed) {
-      address[] memory plugins = new address[](1);
-      plugins[0] = WEBAUTHN_OWNER_PLUGIN;
-
-      bytes32[] memory manifestHashes = new bytes32[](1);
-      manifestHashes[0] = _WEBAUTHN_OWNER_PLUGIN_MANIFEST_HASH;
-
-      IAccountInitializable(accountAddress).initialize(plugins, abi.encode(manifestHashes, pluginInitBytes));
-    }
+    if (!alreadyDeployed) _initializeAccount(IAccountInitializable(accountAddress), ownerBytes);
   }
 
   /// @notice Add stake to an entry point
@@ -138,6 +128,19 @@ contract WebauthnModularAccountFactory is Ownable2Step {
   /// @notice Overriding to disable renounce ownership in Ownable
   function renounceOwnership() public view override onlyOwner {
     revert InvalidAction();
+  }
+
+  function _initializeAccount(IAccountInitializable account, bytes memory owners) internal virtual {
+    address[] memory plugins = new address[](1);
+    plugins[0] = WEBAUTHN_OWNER_PLUGIN;
+
+    bytes32[] memory manifestHashes = new bytes32[](1);
+    manifestHashes[0] = _WEBAUTHN_OWNER_PLUGIN_MANIFEST_HASH;
+
+    bytes[] memory initBytes = new bytes[](1);
+    initBytes[0] = owners;
+
+    account.initialize(plugins, abi.encode(manifestHashes, initBytes));
   }
 }
 
