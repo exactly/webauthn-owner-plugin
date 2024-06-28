@@ -331,7 +331,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
 
     if (owner.y == 0) {
       if (owner.x > type(uint160).max) revert InvalidEthereumAddressOwner(bytes32(owner.x));
-      return address(uint160(owner.x)).isValidSignatureNow(message, signature[1:]);
+      return address(uint160(owner.x)).isValidSignatureNowCalldata(message, signature[1:]);
     }
 
     return WebAuthn.verify({
