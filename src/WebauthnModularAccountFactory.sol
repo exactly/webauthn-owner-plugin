@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Ownable, Ownable2Step } from "openzeppelin-contracts/contracts/access/Ownable2Step.sol";
+import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import { Ownable2Step } from "openzeppelin-contracts/contracts/access/Ownable2Step.sol";
 
 import { FactoryHelpers } from "modular-account/src/helpers/FactoryHelpers.sol";
 import { IAccountInitializable } from "modular-account/src/interfaces/IAccountInitializable.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
+import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
 
 import { LibClone } from "solady/utils/LibClone.sol";
 import { SafeTransferLib } from "solady/utils/SafeTransferLib.sol";
 
-import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 import { OwnersLib } from "./OwnersLib.sol";
 
 /// @title Webauthn Owner Plugin Modular Account Factory

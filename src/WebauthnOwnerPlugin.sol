@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.20;
 
+import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
+
 import {
   ManifestAssociatedFunction,
   ManifestAssociatedFunctionType,
@@ -23,7 +25,7 @@ import { UUPSUpgradeable } from "solady/utils/UUPSUpgradeable.sol";
 
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
-import { IMultiOwnerPlugin, IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 import { Owners, OwnersLib } from "./OwnersLib.sol";
 
 contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
