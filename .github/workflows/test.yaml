@@ -24,3 +24,7 @@ jobs:
       - run: bun install
       - run: forge build
       - run: bun run test
+      - uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
