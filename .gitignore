@@ -6,6 +6,7 @@ out/
 /broadcast/**/dry-run/
 /broadcast/**/run-latest.json
 docs/
+lcov.info
 
 .env
 .vscode/
