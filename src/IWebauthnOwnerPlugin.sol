@@ -14,6 +14,8 @@ interface IWebauthnOwnerPlugin is IMultiOwnerPlugin {
 
   function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners);
   function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint8 index);
+
+  function updateOwnersPublicKeys(PublicKey[] memory ownersToAdd, PublicKey[] memory ownersToRemove) external;
 }
 
 /// @dev Only 64 sequential public keys can be associated (https://eips.ethereum.org/EIPS/eip-7562#validation-rules).
