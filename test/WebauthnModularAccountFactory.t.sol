@@ -12,14 +12,8 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
-import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
-import {
-  IMultiOwnerPlugin,
-  IWebauthnOwnerPlugin,
-  MAX_OWNERS,
-  PublicKey,
-  WebauthnOwnerPlugin
-} from "../src/WebauthnOwnerPlugin.sol";
+import { OwnersLimitExceeded, WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
+import { IMultiOwnerPlugin, MAX_OWNERS, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 // solhint-disable func-name-mixedcase
 contract WebauthnModularAccountFactoryTest is Test {
@@ -183,7 +177,7 @@ contract WebauthnModularAccountFactoryTest is Test {
 
   function test_getAddressWithTooManyOwners() external {
     largeOwners.push(address(101));
-    vm.expectRevert(IWebauthnOwnerPlugin.OwnersLimitExceeded.selector);
+    vm.expectRevert(OwnersLimitExceeded.selector);
     factory.getAddress(0, largeOwners.toPublicKeys());
   }
 

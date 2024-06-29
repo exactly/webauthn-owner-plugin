@@ -12,7 +12,7 @@ import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwner
 import { LibClone } from "solady/utils/LibClone.sol";
 import { SafeTransferLib } from "solady/utils/SafeTransferLib.sol";
 
-import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
+import { MAX_OWNERS, PublicKey } from "./IWebauthnOwnerPlugin.sol";
 import { OwnersLib } from "./OwnersLib.sol";
 
 /// @title Webauthn Owner Plugin Modular Account Factory
@@ -113,7 +113,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     // Array can't be empty.
     if (owners.length == 0) revert IMultiOwnerPlugin.EmptyOwnersNotAllowed();
 
-    if (owners.length > MAX_OWNERS) revert IWebauthnOwnerPlugin.OwnersLimitExceeded();
+    if (owners.length > MAX_OWNERS) revert OwnersLimitExceeded();
 
     address previousOwnerAddress;
     for (uint256 i = 0; i < owners.length; ++i) {
@@ -145,3 +145,4 @@ contract WebauthnModularAccountFactory is Ownable2Step {
 }
 
 error InvalidAction();
+error OwnersLimitExceeded();

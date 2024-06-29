@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Test } from "forge-std/Test.sol";
+import { Test, stdError } from "forge-std/Test.sol";
 
 import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
@@ -21,7 +21,7 @@ import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
-import { IWebauthnOwnerPlugin, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
+import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
 
@@ -129,6 +129,18 @@ contract MultiOwnerPluginTest is Test {
     vm.stopPrank();
   }
 
+  function test_onInstall_failWithLimitExceeded() external {
+    address[] memory owners = new address[](MAX_OWNERS + 1);
+    for (uint160 i = 0; i < owners.length; ++i) {
+      owners[i] = address(i + 1);
+    }
+
+    vm.expectRevert(stdError.indexOOBError);
+    vm.startPrank(address(contractOwner));
+    plugin.onInstall(abi.encode(owners.toPublicKeys()));
+    vm.stopPrank();
+  }
+
   function test_eip712Domain() external view {
     assertEq(true, plugin.isOwnerOf(accountA, owner2));
     assertEq(false, plugin.isOwnerOf(accountA, address(contractOwner)));
@@ -199,6 +211,16 @@ contract MultiOwnerPluginTest is Test {
 
     vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.OwnerDoesNotExist.selector, address(contractOwner)));
     plugin.updateOwners(new address[](0), ownersToRemove);
+  }
+
+  function test_updateOwners_failWithLimitExceeded() external {
+    address[] memory ownersToAdd = new address[](MAX_OWNERS - ownerArray.length + 1);
+    for (uint160 i = 0; i < ownersToAdd.length; ++i) {
+      ownersToAdd[i] = address(i + 1);
+    }
+
+    vm.expectRevert(stdError.indexOOBError);
+    plugin.updateOwners(ownersToAdd, new address[](0));
   }
 
   function test_updateOwnersPublicKeys_failWithInvalidAddress() external {

@@ -83,7 +83,6 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
     }
-    if (ownerCount > MAX_OWNERS) revert OwnersLimitExceeded();
     if (ownerCount == 0) revert EmptyOwnersNotAllowed();
 
     owners.length = ownerCount;
@@ -120,7 +119,6 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
     (PublicKey[] memory initialOwners) = abi.decode(data, (PublicKey[]));
     if (initialOwners.length == 0) revert EmptyOwnersNotAllowed();
-    if (initialOwners.length > MAX_OWNERS) revert OwnersLimitExceeded();
 
     uint256 count = 0;
     address previousOwnerAddress;
