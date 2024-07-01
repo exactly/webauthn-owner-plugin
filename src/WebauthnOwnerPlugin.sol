@@ -327,7 +327,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     PublicKey memory owner = _owners[account].get(uint8(signature[0]));
 
     if (owner.y == 0) {
-      if (owner.x > type(uint160).max) revert InvalidEthereumAddressOwner(bytes32(owner.x));
+      if (owner.x > type(uint160).max) revert InvalidEthereumAddressOwner(bytes32(owner.x)); // should be impossible
       return address(uint160(owner.x)).isValidSignatureNowCalldata(message, signature[1:]);
     }
 
