@@ -70,15 +70,17 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     uint256 addIndex = 0;
     for (uint256 removeIndex = 0; removeIndex < ownersToRemove.length; ++removeIndex) {
       uint256 ownerIndex = keys.find(ownersToRemove[removeIndex], ownerCount);
-      if (ownerIndex == type(uint256).max) revert OwnerDoesNotExist(ownersToRemove[removeIndex].toAddress());
+      if (
+        ownerIndex == type(uint256).max //
+      ) revert OwnerDoesNotExist(ownersToRemove[removeIndex].toAddress());
       if (--ownerCount == 0) break;
       keys[ownerIndex] = addIndex < ownersToAdd.length ? ownersToAdd[addIndex++] : keys[ownerCount];
       owners.publicKeys[ownerIndex] = keys[ownerIndex];
     }
     for (; addIndex < ownersToAdd.length; ++addIndex) {
-      if (ownersToAdd[addIndex].isInvalid() || keys.contains(ownersToAdd[addIndex], ownerCount)) {
-        revert InvalidOwner(ownersToAdd[addIndex].toAddress());
-      }
+      if (
+        ownersToAdd[addIndex].isInvalid() || keys.contains(ownersToAdd[addIndex], ownerCount) //
+      ) revert InvalidOwner(ownersToAdd[addIndex].toAddress());
       keys[ownerCount] = ownersToAdd[addIndex];
       owners.publicKeys[ownerCount] = keys[ownerCount];
       ++ownerCount;
