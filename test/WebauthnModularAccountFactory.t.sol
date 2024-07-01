@@ -7,12 +7,16 @@ import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
 import { PluginManagerInternals } from "modular-account/src/account/PluginManagerInternals.sol";
 import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
+import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 
+import { MockERC20 } from "solady/../test/utils/mocks/MockERC20.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
-import { OwnersLimitExceeded, WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
+import {
+  InvalidAction, OwnersLimitExceeded, WebauthnModularAccountFactory
+} from "../src/WebauthnModularAccountFactory.sol";
 import { IMultiOwnerPlugin, MAX_OWNERS, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 // solhint-disable func-name-mixedcase
@@ -161,6 +165,14 @@ contract WebauthnModularAccountFactoryTest is Test {
     assertEq(address(factory).balance, 0);
   }
 
+  function test_withdraw_token() external {
+    MockERC20 token = new MockERC20("A", "A", 18);
+    token.mint(address(factory), 1);
+    assertEq(token.balanceOf(address(factory)), 1);
+    factory.withdraw(payable(address(this)), address(token), 1);
+    assertEq(token.balanceOf(address(factory)), 0);
+  }
+
   function test_2StepOwnershipTransfer() external {
     assertEq(factory.owner(), address(this));
     factory.transferOwnership(owner1);
@@ -216,6 +228,31 @@ contract WebauthnModularAccountFactoryTest is Test {
       )
     );
     factory.createAccount(0, tempOwners.toPublicKeys());
+  }
+
+  function test_renounceOwnership() external {
+    vm.expectRevert(InvalidAction.selector);
+    factory.renounceOwnership();
+  }
+
+  function test_constructor_failWithZeroAddress() external {
+    address impl = factory.IMPL();
+    bytes32 manifestHash = keccak256(abi.encode(plugin.pluginManifest()));
+
+    vm.expectRevert(InvalidAction.selector);
+    new WebauthnModularAccountFactory(address(this), address(0), impl, manifestHash, IEntryPoint(address(entryPoint)));
+
+    vm.expectRevert(InvalidAction.selector);
+    new WebauthnModularAccountFactory(
+      address(this), address(plugin), address(0), manifestHash, IEntryPoint(address(entryPoint))
+    );
+
+    vm.expectRevert(InvalidAction.selector);
+    new WebauthnModularAccountFactory(address(this), address(plugin), impl, manifestHash, IEntryPoint(address(0)));
+
+    new WebauthnModularAccountFactory(
+      address(this), address(plugin), impl, manifestHash, IEntryPoint(address(entryPoint))
+    );
   }
 
   // to receive funds from withdraw

@@ -7,12 +7,12 @@ import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
 import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
-import { BasePlugin } from "modular-account/src/plugins/BasePlugin.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
 import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
 
-import { PluginManifest } from "modular-account-libs/interfaces/IPlugin.sol";
+import { PluginManifest, PluginMetadata } from "modular-account-libs/interfaces/IPlugin.sol";
 import { UserOperation } from "modular-account-libs/interfaces/UserOperation.sol";
+import { BasePlugin } from "modular-account-libs/plugins/BasePlugin.sol";
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
@@ -20,7 +20,7 @@ import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
 import { DeployScript } from "../script/Deploy.s.sol";
-import { OwnersLib } from "../src/OwnersLib.sol";
+import { IndexOutOfBounds, OwnersLib } from "../src/OwnersLib.sol";
 import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
 import { TestLib } from "./utils/TestLib.sol";
@@ -126,6 +126,13 @@ contract MultiOwnerPluginTest is Test {
     vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, owners[0].toAddress()));
     vm.startPrank(address(contractOwner));
     plugin.onInstall(abi.encode(owners));
+    vm.stopPrank();
+  }
+
+  function test_onInstall_failWithEmptyOwners() external {
+    vm.expectRevert(IMultiOwnerPlugin.EmptyOwnersNotAllowed.selector);
+    vm.startPrank(address(contractOwner));
+    plugin.onInstall(abi.encode(new PublicKey[](0)));
     vm.stopPrank();
   }
 
@@ -308,6 +315,37 @@ contract MultiOwnerPluginTest is Test {
     assertEq(_1271_MAGIC_VALUE, plugin.isValidSignature(digest, signature));
   }
 
+  function test_isValidSignature_failWithOutOfBounds() external {
+    vm.expectRevert(IndexOutOfBounds.selector);
+    plugin.isValidSignature("", abi.encodePacked(uint8(4), ""));
+  }
+
+  function test_isValidSignature_failMalformedAddress() external {
+    vm.store(
+      address(plugin),
+      bytes32(uint256(keccak256(abi.encode(accountA, uint256(0)))) + 1),
+      bytes32(uint256(type(uint160).max) + 1)
+    );
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IWebauthnOwnerPlugin.InvalidEthereumAddressOwner.selector, bytes32(uint256(type(uint160).max) + 1)
+      )
+    );
+    plugin.isValidSignature("", abi.encodePacked(uint8(0), ""));
+  }
+
+  function testFuzz_runtimeValidationFunction_BadFunctionId(uint8 functionId) external {
+    vm.assume(functionId != uint8(IMultiOwnerPlugin.FunctionId.RUNTIME_VALIDATION_OWNER_OR_SELF));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        BasePlugin.NotImplemented.selector, BasePlugin.runtimeValidationFunction.selector, functionId
+      )
+    );
+    plugin.runtimeValidationFunction(functionId, address(0), 0, "");
+  }
+
   function test_runtimeValidationFunction_OwnerOrSelf() external {
     // should pass with owner as sender
     plugin.runtimeValidationFunction(
@@ -432,6 +470,23 @@ contract MultiOwnerPluginTest is Test {
     assertEq(resSuccess, 0);
   }
 
+  function testFuzz_userOpValidationFunction_BadFunctionId(uint8 functionId) external {
+    vm.assume(functionId != uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER));
+
+    UserOperation memory userOp;
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        BasePlugin.NotImplemented.selector, BasePlugin.userOpValidationFunction.selector, functionId
+      )
+    );
+    plugin.userOpValidationFunction(functionId, userOp, 0);
+  }
+
+  function test_ownerIndexOf_failWithNotExist() external {
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.OwnerDoesNotExist.selector, address(0xb0b)));
+    plugin.ownerIndexOf(accountA, address(0xb0b).toPublicKey());
+  }
+
   function test_pluginInitializeGuards() external {
     plugin.onUninstall(bytes(""));
 
@@ -446,5 +501,15 @@ contract MultiOwnerPluginTest is Test {
     plugin.onInstall(abi.encode(addrArr, new address[](0)));
     vm.expectRevert(abi.encodeWithSelector(BasePlugin.AlreadyInitialized.selector));
     plugin.onInstall(abi.encode(addrArr, new address[](0)));
+  }
+
+  function test_pluginMetadata_success() external view {
+    PluginMetadata memory metadata = plugin.pluginMetadata();
+
+    assertEq(metadata.permissionDescriptors.length, 2);
+    assertEq(metadata.permissionDescriptors[0].permissionDescription, "Modify Ownership");
+    assertEq(metadata.permissionDescriptors[1].permissionDescription, "Modify Ownership");
+    assertEq(metadata.permissionDescriptors[0].functionSelector, IMultiOwnerPlugin.updateOwners.selector);
+    assertEq(metadata.permissionDescriptors[1].functionSelector, IWebauthnOwnerPlugin.updateOwnersPublicKeys.selector);
   }
 }
