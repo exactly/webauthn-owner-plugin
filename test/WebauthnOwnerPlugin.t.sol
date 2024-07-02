@@ -212,6 +212,29 @@ contract MultiOwnerPluginTest is Test {
     assertEq(newOwnerList[0], owner3);
   }
 
+  function test_updateOwners_addAndRemove() external {
+    (address[] memory owners) = plugin.ownersOf(accountA);
+    assertEq(ownerArray, owners);
+
+    address[] memory ownersToRemove = new address[](3);
+    ownersToRemove[0] = owner2;
+    ownersToRemove[1] = owner3;
+    ownersToRemove[2] = owner1;
+
+    address[] memory ownersToAdd = new address[](2);
+    ownersToAdd[0] = address(1);
+
+    vm.expectRevert(abi.encodeWithSelector(IMultiOwnerPlugin.InvalidOwner.selector, address(0)));
+    plugin.updateOwners(ownersToAdd, ownersToRemove);
+
+    ownersToAdd[1] = address(2);
+    plugin.updateOwners(ownersToAdd, ownersToRemove);
+
+    (address[] memory newOwnerList) = plugin.ownersOf(accountA);
+    assertEq(newOwnerList.length, 2);
+    assertEq(newOwnerList, ownersToAdd);
+  }
+
   function test_updateOwners_failWithNotExist() external {
     address[] memory ownersToRemove = new address[](1);
     ownersToRemove[0] = address(contractOwner);
