@@ -16,9 +16,17 @@ the account. Its core features include:
   - `upgradeToAndCall`
   - `execute` / `executeBatch`
 
-> [!CAUTION]
-> The code in this repository and its dependencies are still under audit.
-  It is not yet recommended for production use.
+This plugin is optimized for Ethereum layer 2 rollup chains but will work on all
+EVM chains. Signature verification always attempts to use the RIP-7212 precompile
+and, if this fails, falls back to using FreshCryptoLib.
+
+> [!IMPORTANT]
+>
+> - The code in this repository and its dependencies are still under audit.
+>   It is not yet recommended for production use.
+> - FreshCryptoLib uses the `ModExp` precompile (`address(0x05)`), which is not supported
+>   on some chains, such as [Polygon zkEVM](https://www.rollup.codes/polygon-zkevm#precompiled-contracts).
+>   This plugin will not work on such chains, unless they support the RIP-7212 precompile.
 
 ## Developing
 
