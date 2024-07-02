@@ -27,6 +27,11 @@ and, if this fails, falls back to using FreshCryptoLib.
 > - FreshCryptoLib uses the `ModExp` precompile (`address(0x05)`), which is not supported
 >   on some chains, such as [Polygon zkEVM](https://www.rollup.codes/polygon-zkevm#precompiled-contracts).
 >   This plugin will not work on such chains, unless they support the RIP-7212 precompile.
+> - When attempting to use the RIP-7212 precompile, the plugin will call the precompile
+>   (`address(0x100)`). However, since signature validation might be called during
+>   a user operation validation phase, it can violate ERC-7562 [validation rule OP-041](https://eips.ethereum.org/EIPS/eip-7562#validation-rules)
+>   on networks that don't support the RIP-7212 precompile. Therefore, this plugin
+>   won't be compatible with most bundlers on such networks.
 
 ## Developing
 
