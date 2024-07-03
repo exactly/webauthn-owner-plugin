@@ -333,6 +333,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     return keccak256(abi.encode(_TYPE_HASH, _NAME_HASH, _VERSION_HASH, block.chainid, account, _SALT));
   }
 
+  /// @notice Signatures are valid indefinitely.
   /// @dev Webauthn public keys with `y` as 0 are not supported, as they will be treated as Ethereum addresses.
   function _validateSignature(address account, bytes32 message, bytes calldata signature) internal view returns (bool) {
     PublicKey memory owner = _owners[account].get(uint8(signature[0]));
