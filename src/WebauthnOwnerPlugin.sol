@@ -125,6 +125,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
   }
 
   /// @inheritdoc BasePlugin
+  /// @param data ABI-encoded array of `PublicKey` elements. It differs from `MultiOwnerPlugin`'s array of `address`.
   function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
     (PublicKey[] memory initialOwners) = abi.decode(data, (PublicKey[]));
     if (initialOwners.length == 0) revert EmptyOwnersNotAllowed();
