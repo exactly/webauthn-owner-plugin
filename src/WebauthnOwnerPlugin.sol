@@ -61,6 +61,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     emit OwnerUpdated(msg.sender, ownersToAdd, ownersToRemove);
   }
 
+  /// @inheritdoc IWebauthnOwnerPlugin
   function updateOwnersPublicKeys(PublicKey[] memory ownersToAdd, PublicKey[] memory ownersToRemove)
     public
     isInitialized(msg.sender)
@@ -301,10 +302,12 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     owners = _owners[account].allAddresses();
   }
 
+  /// @inheritdoc IWebauthnOwnerPlugin
   function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners) {
     owners = _owners[account].all();
   }
 
+  /// @inheritdoc IWebauthnOwnerPlugin
   function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint8 index) {
     Owners storage owners = _owners[account];
     uint256 ownerCount = owners.length;

@@ -10,11 +10,26 @@ interface IWebauthnOwnerPlugin is IMultiOwnerPlugin {
   /// @param removedOwners The public key or address array of removed owners.
   event OwnerUpdated(address indexed account, PublicKey[] addedOwners, PublicKey[] removedOwners);
 
+  /// @notice Thrown if a provided owner is 32 bytes long but does not fit in an `address` type.
+  /// @param owner The invalid owner.
   error InvalidEthereumAddressOwner(bytes32 owner);
 
+  /// @notice Get the public keys of the owners of `account`.
+  /// @param account The account to get the owners of.
+  /// @return owners The public keys of the owners of the account.
   function ownersPublicKeysOf(address account) external view returns (PublicKey[] memory owners);
+
+  /// @notice Get the index of an owner in the owners array of `account`.
+  /// @param account The account to get the owners of.
+  /// @param owner The owner to get the index of.
+  /// @return index The index of the owner in the owners array.
   function ownerIndexOf(address account, PublicKey calldata owner) external view returns (uint8 index);
 
+  /// @notice Update owners of the account. Owners can update owners.
+  /// @dev This function is installed on the account as part of plugin installation, and should
+  ///      only be called from an account.
+  /// @param ownersToAdd The public key array of owners to be added.
+  /// @param ownersToRemove The public key array of owners to be removed.
   function updateOwnersPublicKeys(PublicKey[] memory ownersToAdd, PublicKey[] memory ownersToRemove) external;
 }
 
