@@ -49,6 +49,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
 
   bytes32 private constant _MODULAR_ACCOUNT_TYPE_HASH = keccak256("AlchemyModularAccountMessage(bytes message)");
 
+  /// @dev The `owners.publicKeys[index]` field can be dirty if `index >= owners.length`.
   mapping(address account => Owners owners) private _owners;
 
   /// @inheritdoc IMultiOwnerPlugin
