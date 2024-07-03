@@ -19,6 +19,10 @@ the account. Its core features include:
 This plugin is optimized for Ethereum layer 2 rollup chains but will work on all
 EVM chains. Signature verification always attempts to use the RIP-7212 precompile
 and, if this fails, falls back to using FreshCryptoLib.
+It conforms to these ERC versions:
+
+- ERC-4337: [0.6.0](https://github.com/eth-infinitism/account-abstraction/blob/releases/v0.6/eip/EIPS/eip-4337.md)
+- ERC-6900: [0.7.0](https://github.com/erc6900/reference-implementation/blob/v0.7.x/standard/ERCs/erc-6900.md)
 
 > [!IMPORTANT]
 >
