@@ -19,7 +19,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
-import { DeployScript } from "../script/Deploy.s.sol";
+import { ACCOUNT_IMPL, DeployScript, ENTRYPOINT } from "../script/Deploy.s.sol";
 import { IndexOutOfBounds, OwnersLib } from "../src/OwnersLib.sol";
 import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
@@ -53,9 +53,9 @@ contract MultiOwnerPluginTest is Test {
 
   function setUp() external {
     DeployScript deploy = new DeployScript();
-    entryPoint = deploy.ENTRYPOINT();
+    entryPoint = ENTRYPOINT;
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
-    vm.etch(deploy.ACCOUNT_IMPL(), address(new UpgradeableModularAccount(entryPoint)).code);
+    vm.etch(ACCOUNT_IMPL, address(new UpgradeableModularAccount(entryPoint)).code);
     deploy.run();
     plugin = deploy.plugin();
 

@@ -16,7 +16,7 @@ import { IERC1271 } from "openzeppelin-contracts/contracts/interfaces/IERC1271.s
 
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { DeployScript } from "../script/Deploy.s.sol";
+import { ACCOUNT_IMPL, DeployScript, ENTRYPOINT } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
 import { WebauthnModularAccountFactory } from "../src/WebauthnModularAccountFactory.sol";
 import { WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
@@ -53,9 +53,9 @@ contract MultiOwnerPluginIntegration is Test {
 
   function setUp() external {
     DeployScript deploy = new DeployScript();
-    entryPoint = deploy.ENTRYPOINT();
+    entryPoint = ENTRYPOINT;
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
-    vm.etch(deploy.ACCOUNT_IMPL(), address(new UpgradeableModularAccount(entryPoint)).code);
+    vm.etch(ACCOUNT_IMPL, address(new UpgradeableModularAccount(entryPoint)).code);
     deploy.run();
     plugin = deploy.plugin();
     factory = deploy.factory();

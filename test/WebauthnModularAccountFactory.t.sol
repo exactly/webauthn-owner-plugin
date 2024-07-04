@@ -12,7 +12,7 @@ import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.
 import { MockERC20 } from "solady/../test/utils/mocks/MockERC20.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { DeployScript } from "../script/Deploy.s.sol";
+import { ACCOUNT_IMPL, DeployScript, ENTRYPOINT } from "../script/Deploy.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
 import {
   InvalidAction, OwnersLimitExceeded, WebauthnModularAccountFactory
@@ -46,15 +46,12 @@ contract WebauthnModularAccountFactoryTest is Test {
 
   function setUp() external {
     DeployScript deploy = new DeployScript();
-    entryPoint = EntryPoint(payable(address(deploy.ENTRYPOINT())));
+    entryPoint = EntryPoint(payable(address(ENTRYPOINT)));
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
-    vm.etch(deploy.ACCOUNT_IMPL(), address(new UpgradeableModularAccount(deploy.ENTRYPOINT())).code);
+    vm.etch(ACCOUNT_IMPL, address(new UpgradeableModularAccount(ENTRYPOINT)).code);
     deploy.run();
     plugin = deploy.plugin();
     factory = deploy.factory();
-    factory.unlockStake();
-    skip(entryPoint.getDepositInfo(address(factory)).unstakeDelaySec);
-    factory.withdrawStake(payable(0));
 
     owners.push(owner1);
     owners.push(owner2);
