@@ -43,6 +43,7 @@ library OwnersLib {
     return false;
   }
 
+  /// @dev The search is bounded by the `length` argument and can read dirty data if `length` is not set correctly.
   function contains(PublicKey[MAX_OWNERS] memory keys, PublicKey memory owner, uint256 length)
     internal
     pure
@@ -54,6 +55,7 @@ library OwnersLib {
     return false;
   }
 
+  /// @dev The search is bounded by the `length` argument and can read dirty data if `length` is not set correctly.
   function find(PublicKey[MAX_OWNERS] memory keys, PublicKey memory owner, uint256 length)
     internal
     pure
