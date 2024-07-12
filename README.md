@@ -26,8 +26,6 @@ It conforms to these ERC versions:
 
 > [!IMPORTANT]
 >
-> - The code in this repository and its dependencies are still under audit.
->   It is not yet recommended for production use.
 > - FreshCryptoLib uses the `ModExp` precompile (`address(0x05)`), which is not supported
 >   on some chains, such as [Polygon zkEVM](https://www.rollup.codes/polygon-zkevm#precompiled-contracts).
 >   This plugin will not work on such chains, unless they support the RIP-7212 precompile.
