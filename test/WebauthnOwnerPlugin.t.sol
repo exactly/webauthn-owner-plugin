@@ -5,7 +5,6 @@ import { Test, stdError } from "forge-std/Test.sol";
 
 import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
-import { UpgradeableModularAccount } from "modular-account/src/account/UpgradeableModularAccount.sol";
 import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.sol";
 import { IMultiOwnerPlugin } from "modular-account/src/plugins/owner/IMultiOwnerPlugin.sol";
 import { ContractOwner } from "modular-account/test/mocks/ContractOwner.sol";
@@ -19,7 +18,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { Utils, WebAuthnInfo } from "webauthn-sol/../test/Utils.sol";
 import { WebAuthn } from "webauthn-sol/WebAuthn.sol";
 
-import { ACCOUNT_IMPL, DeployScript, ENTRYPOINT } from "../script/Deploy.s.sol";
+import { ENTRYPOINT } from "../script/Factory.s.sol";
 import { IndexOutOfBounds, OwnersLib } from "../src/OwnersLib.sol";
 import { IWebauthnOwnerPlugin, MAX_OWNERS, PublicKey, WebauthnOwnerPlugin } from "../src/WebauthnOwnerPlugin.sol";
 
@@ -52,12 +51,9 @@ contract MultiOwnerPluginTest is Test {
   address[] public ownerArray;
 
   function setUp() external {
-    DeployScript deploy = new DeployScript();
     entryPoint = ENTRYPOINT;
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
-    vm.etch(ACCOUNT_IMPL, address(new UpgradeableModularAccount(entryPoint)).code);
-    deploy.run();
-    plugin = deploy.plugin();
+    plugin = new WebauthnOwnerPlugin();
 
     accountA = address(entryPoint);
     b = makeAddr("b");

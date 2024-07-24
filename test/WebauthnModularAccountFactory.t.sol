@@ -12,7 +12,7 @@ import { IEntryPoint } from "modular-account/src/interfaces/erc4337/IEntryPoint.
 import { MockERC20 } from "solady/../test/utils/mocks/MockERC20.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 
-import { ACCOUNT_IMPL, DeployScript, ENTRYPOINT } from "../script/Deploy.s.sol";
+import { ACCOUNT_IMPL, ENTRYPOINT } from "../script/Factory.s.sol";
 import { OwnersLib } from "../src/OwnersLib.sol";
 import {
   InvalidAction, OwnersLimitExceeded, WebauthnModularAccountFactory
@@ -45,13 +45,13 @@ contract WebauthnModularAccountFactoryTest is Test {
   bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
   function setUp() external {
-    DeployScript deploy = new DeployScript();
     entryPoint = EntryPoint(payable(address(ENTRYPOINT)));
     vm.etch(address(entryPoint), address(new EntryPoint()).code);
     vm.etch(ACCOUNT_IMPL, address(new UpgradeableModularAccount(ENTRYPOINT)).code);
-    deploy.run();
-    plugin = deploy.plugin();
-    factory = deploy.factory();
+    plugin = new WebauthnOwnerPlugin();
+    factory = new WebauthnModularAccountFactory(
+      address(this), address(plugin), ACCOUNT_IMPL, keccak256(abi.encode(plugin.pluginManifest())), ENTRYPOINT
+    );
 
     owners.push(owner1);
     owners.push(owner2);
