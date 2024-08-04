@@ -9,8 +9,7 @@
     "test:solhint": "solhint '{src,script,test}/**/*.sol' --max-warnings=0",
     "test:slither": "slither .",
     "test:markdown": "markdownlint-cli2 .",
-    "snapshot": "forge snapshot --force",
-    "prepare": "if git status &>/dev/null; then git submodule update --init --recursive; fi"
+    "snapshot": "forge snapshot --force"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
