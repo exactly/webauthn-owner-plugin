@@ -67,7 +67,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     bool alreadyDeployed;
     (alreadyDeployed, accountAddress) = IMPL.createDeterministicERC1967(combinedSalt);
 
-    if (!alreadyDeployed) _initializeAccount(IAccountInitializable(accountAddress), ownerBytes);
+    if (!alreadyDeployed) _initializeAccount(IAccountInitializable(accountAddress), salt, ownerBytes);
   }
 
   /// @notice Add stake to an entry point
@@ -130,7 +130,7 @@ contract WebauthnModularAccountFactory is Ownable2Step {
     revert InvalidAction();
   }
 
-  function _initializeAccount(IAccountInitializable account, bytes memory owners) internal virtual {
+  function _initializeAccount(IAccountInitializable account, uint256, bytes memory owners) internal virtual {
     address[] memory plugins = new address[](1);
     plugins[0] = WEBAUTHN_OWNER_PLUGIN;
 
