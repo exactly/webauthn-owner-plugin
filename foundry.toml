@@ -14,6 +14,9 @@ sort_imports = true
 bracket_spacing = true
 number_underscore = "thousands"
 
+[lint]
+ignore = ["test/**/*.t.sol"]
+
 [rpc_endpoints]
 base = "${BASE_RPC_URL}"
 base_sepolia = "${BASE_SEPOLIA_RPC_URL}"
