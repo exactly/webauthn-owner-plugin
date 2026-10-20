@@ -131,7 +131,7 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     if (initialOwners.length == 0) revert EmptyOwnersNotAllowed();
 
     uint256 count = 0;
-    address previousOwnerAddress;
+    address previousOwnerAddress = address(0);
     Owners storage owners = _owners[msg.sender];
     for (; count < initialOwners.length; ++count) {
       address ownerAddress = initialOwners[count].toAddress();
