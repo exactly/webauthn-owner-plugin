@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { Test } from "forge-std/Test.sol";
+import { VmSafe } from "forge-std/Vm.sol";
 
 import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
@@ -98,13 +99,13 @@ contract WebauthnModularAccountFactoryTest is Test {
   function test_deployCollision() external {
     address deployed = factory.createAccount(0, owners.toPublicKeys());
 
-    uint256 gasStart = gasleft();
-
-    // deploy 2nd time which should short circuit
-    // test for short circuit -> call should cost less than a CREATE2, or 32000 gas
+    vm.startStateDiffRecording();
     address secondDeploy = factory.createAccount(0, owners.toPublicKeys());
+    VmSafe.AccountAccess[] memory accesses = vm.stopAndReturnStateDiff();
 
-    assertApproxEqAbs(gasleft(), gasStart, 31_999);
+    for (uint256 i = 0; i < accesses.length; ++i) {
+      assertTrue(accesses[i].kind != VmSafe.AccountAccessKind.Create, "account created twice");
+    }
     assertEq(deployed, secondDeploy);
   }
 
