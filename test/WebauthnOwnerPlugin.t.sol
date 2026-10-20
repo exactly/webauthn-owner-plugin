@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { Test, stdError } from "forge-std/Test.sol";
+import { VmSafe } from "forge-std/Vm.sol";
 
 import { EntryPoint } from "account-abstraction/core/EntryPoint.sol";
 
@@ -455,6 +456,44 @@ contract MultiOwnerPluginTest is Test {
     uint256 resSuccess =
       plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);
     assertEq(resSuccess, 0);
+  }
+
+  function testFuzz_userOpValidationFunction_EOAOwnerWithoutCodeAccess(UserOperation memory userOp) external {
+    (address signer, uint256 privateKey) = makeAddrAndKey("signer");
+    address[] memory ownersToAdd = new address[](1);
+    ownersToAdd[0] = signer;
+    plugin.updateOwners(ownersToAdd, new address[](0));
+
+    bytes32 userOpHash = entryPoint.getUserOpHash(userOp);
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, userOpHash.toEthSignedMessageHash());
+    userOp.signature = abi.encodePacked(plugin.ownerIndexOf(accountA, signer.toPublicKey()), abi.encodePacked(r, s, v));
+
+    vm.startStateDiffRecording();
+    uint256 validation =
+      plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash);
+    VmSafe.AccountAccess[] memory accesses = vm.stopAndReturnStateDiff();
+
+    assertEq(validation, 0);
+    for (uint256 i = 0; i < accesses.length; ++i) {
+      assertNotEq(accesses[i].account, signer, "owner accessed");
+    }
+  }
+
+  function testFuzz_userOpValidationFunction_EIP7702Owner(UserOperation memory userOp) external {
+    (address signer, uint256 privateKey) = makeAddrAndKey("signer");
+    vm.etch(signer, abi.encodePacked(hex"ef0100", makeAddr("delegate")));
+    address[] memory ownersToAdd = new address[](1);
+    ownersToAdd[0] = signer;
+    plugin.updateOwners(ownersToAdd, new address[](0));
+
+    bytes32 userOpHash = entryPoint.getUserOpHash(userOp);
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, userOpHash.toEthSignedMessageHash());
+    userOp.signature = abi.encodePacked(plugin.ownerIndexOf(accountA, signer.toPublicKey()), abi.encodePacked(r, s, v));
+
+    assertEq(
+      plugin.userOpValidationFunction(uint8(IMultiOwnerPlugin.FunctionId.USER_OP_VALIDATION_OWNER), userOp, userOpHash),
+      0
+    );
   }
 
   function testFuzz_userOpValidationFunction_PasskeyOwner(UserOperation memory userOp) external {
