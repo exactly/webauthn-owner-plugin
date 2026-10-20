@@ -16,6 +16,8 @@ jobs:
           node-version: 20
       - uses: oven-sh/setup-bun@v1
       - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
