@@ -27,7 +27,11 @@ library OwnersLib {
     }
   }
 
-  function all64(Owners storage owners) internal view returns (uint256 length, PublicKey[MAX_OWNERS] memory publicKeys) {
+  function all64(Owners storage owners)
+    internal
+    view
+    returns (uint256 length, PublicKey[MAX_OWNERS] memory publicKeys)
+  {
     length = owners.length;
     for (uint256 i = 0; i < length; ++i) {
       publicKeys[i] = owners.publicKeys[i];

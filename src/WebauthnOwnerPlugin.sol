@@ -193,32 +193,25 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
 
     manifest.userOpValidationFunctions = new ManifestAssociatedFunction[](7);
     manifest.userOpValidationFunctions[0] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwners.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: this.updateOwners.selector, associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[1] = ManifestAssociatedFunction({
-      executionSelector: IStandardExecutor.execute.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: IStandardExecutor.execute.selector, associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[2] = ManifestAssociatedFunction({
-      executionSelector: IStandardExecutor.executeBatch.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: IStandardExecutor.executeBatch.selector, associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[3] = ManifestAssociatedFunction({
-      executionSelector: IPluginManager.installPlugin.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: IPluginManager.installPlugin.selector, associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[4] = ManifestAssociatedFunction({
-      executionSelector: IPluginManager.uninstallPlugin.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: IPluginManager.uninstallPlugin.selector, associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[5] = ManifestAssociatedFunction({
-      executionSelector: UUPSUpgradeable.upgradeToAndCall.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: UUPSUpgradeable.upgradeToAndCall.selector, associatedFunction: ownerUserOpValidationFunction
     });
     manifest.userOpValidationFunctions[6] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwnersPublicKeys.selector,
-      associatedFunction: ownerUserOpValidationFunction
+      executionSelector: this.updateOwnersPublicKeys.selector, associatedFunction: ownerUserOpValidationFunction
     });
 
     ManifestFunction memory ownerOrSelfRuntimeValidationFunction = ManifestFunction({
@@ -227,31 +220,25 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       dependencyIndex: 0
     });
     ManifestFunction memory alwaysAllowFunction = ManifestFunction({
-      functionType: ManifestAssociatedFunctionType.RUNTIME_VALIDATION_ALWAYS_ALLOW,
-      functionId: 0,
-      dependencyIndex: 0
+      functionType: ManifestAssociatedFunctionType.RUNTIME_VALIDATION_ALWAYS_ALLOW, functionId: 0, dependencyIndex: 0
     });
 
     manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](9);
     manifest.runtimeValidationFunctions[0] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwners.selector,
-      associatedFunction: ownerOrSelfRuntimeValidationFunction
+      executionSelector: this.updateOwners.selector, associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[1] = ManifestAssociatedFunction({
-      executionSelector: this.updateOwnersPublicKeys.selector,
-      associatedFunction: ownerOrSelfRuntimeValidationFunction
+      executionSelector: this.updateOwnersPublicKeys.selector, associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[2] = ManifestAssociatedFunction({
-      executionSelector: IStandardExecutor.execute.selector,
-      associatedFunction: ownerOrSelfRuntimeValidationFunction
+      executionSelector: IStandardExecutor.execute.selector, associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[3] = ManifestAssociatedFunction({
       executionSelector: IStandardExecutor.executeBatch.selector,
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[4] = ManifestAssociatedFunction({
-      executionSelector: IPluginManager.installPlugin.selector,
-      associatedFunction: ownerOrSelfRuntimeValidationFunction
+      executionSelector: IPluginManager.installPlugin.selector, associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[5] = ManifestAssociatedFunction({
       executionSelector: IPluginManager.uninstallPlugin.selector,
@@ -262,12 +249,10 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
       associatedFunction: ownerOrSelfRuntimeValidationFunction
     });
     manifest.runtimeValidationFunctions[7] = ManifestAssociatedFunction({
-      executionSelector: this.isValidSignature.selector,
-      associatedFunction: alwaysAllowFunction
+      executionSelector: this.isValidSignature.selector, associatedFunction: alwaysAllowFunction
     });
     manifest.runtimeValidationFunctions[8] = ManifestAssociatedFunction({
-      executionSelector: this.eip712Domain.selector,
-      associatedFunction: alwaysAllowFunction
+      executionSelector: this.eip712Domain.selector, associatedFunction: alwaysAllowFunction
     });
   }
 
@@ -279,12 +264,10 @@ contract WebauthnOwnerPlugin is BasePlugin, IWebauthnOwnerPlugin, IERC1271 {
     string memory modifyOwnershipPermission = "Modify Ownership";
     metadata.permissionDescriptors = new SelectorPermission[](2);
     metadata.permissionDescriptors[0] = SelectorPermission({
-      functionSelector: this.updateOwners.selector,
-      permissionDescription: modifyOwnershipPermission
+      functionSelector: this.updateOwners.selector, permissionDescription: modifyOwnershipPermission
     });
     metadata.permissionDescriptors[1] = SelectorPermission({
-      functionSelector: this.updateOwnersPublicKeys.selector,
-      permissionDescription: modifyOwnershipPermission
+      functionSelector: this.updateOwnersPublicKeys.selector, permissionDescription: modifyOwnershipPermission
     });
   }
 

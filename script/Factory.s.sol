@@ -22,9 +22,8 @@ contract FactoryScript is Script {
 
   function setUp() external {
     plugin = WebauthnOwnerPlugin(
-      vm.readFile(string.concat("broadcast/Plugin.s.sol/", block.chainid.toString(), "/run-latest.json")).readAddress(
-        ".transactions[0].contractAddress"
-      )
+      vm.readFile(string.concat("broadcast/Plugin.s.sol/", block.chainid.toString(), "/run-latest.json"))
+        .readAddress(".transactions[0].contractAddress")
     );
   }
 
